@@ -5,83 +5,165 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>幸運扭蛋機 - 序號抽獎</title>
     <style>
-        body { font-family: 'Microsoft JhengHei', sans-serif; background: #fdf0d5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        :root {
+            --primary-red: #ef233c;
+            --dark-blue: #2b2d42;
+            --gold: #ffbe0b;
+        }
+
+        body { 
+            font-family: 'Microsoft JhengHei', sans-serif; 
+            background: #fdf0d5; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+        }
         
         /* 跑馬燈 */
-        .marquee-container { width: 100%; max-width: 400px; background: #333; color: #ffbe0b; padding: 8px; border-radius: 20px; margin-bottom: 20px; font-size: 14px; overflow: hidden; }
-
-        /* 扭蛋機主體 */
-        .gacha-machine { width: 280px; height: 380px; position: relative; margin-bottom: 20px; }
-        .machine-top { width: 200px; height: 200px; background: rgba(255, 255, 255, 0.7); border: 6px solid #444; border-radius: 50%; position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; align-content: center; overflow: hidden; z-index: 2; }
-        .machine-bottom { width: 220px; height: 160px; background: #ef233c; border: 6px solid #444; border-radius: 20px; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1; }
-        .knob { width: 60px; height: 60px; background: #fff; border: 4px solid #444; border-radius: 50%; position: absolute; top: 30px; left: 50%; transform: translateX(-50%); cursor: pointer; transition: transform 0.5s; z-index: 3; }
-        .knob::after { content: ""; width: 40px; height: 8px; background: #444; position: absolute; top: 22px; left: 6px; border-radius: 4px; }
-        .exit { width: 70px; height: 40px; background: #333; border-radius: 10px 10px 0 0; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
-
-        /* 裝飾小球 */
-        .ball { width: 35px; height: 35px; border-radius: 50%; margin: 2px; }
-        .b1 { background: #ff4d6d; } .b2 { background: #48cae4; } .b3 { background: #ffbe0b; } .b4 { background: #70e000; }
-
-        /* 動畫 */
-        .shake { animation: shakeAnim 0.3s infinite; }
-        @keyframes shakeAnim {
-            0% { transform: translateX(-50%) rotate(0deg); }
-            50% { transform: translateX(-51%) rotate(3deg); }
-            100% { transform: translateX(-50%) rotate(0deg); }
+        .marquee-container { 
+            width: 100%; 
+            max-width: 400px; 
+            background: var(--dark-blue); 
+            color: var(--gold); 
+            padding: 10px; 
+            border-radius: 25px; 
+            margin-bottom: 30px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
-        .spin { transform: translateX(-50%) rotate(360deg) !important; }
 
-        /* 彈窗 */
-        #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; z-index: 10; width: 280px; border: 4px solid #ef233c; }
-        .prize-name { font-size: 20px; color: #ef233c; font-weight: bold; margin: 10px 0; }
-        .prize-code { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 15px; }
+        /* 扭蛋機置中容器 */
+        .machine-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 50px;
+        }
 
-        /* 中獎清單 */
+        /* 扭蛋機主體 - 這裡不負責置中，只負責動畫 */
+        .gacha-machine { 
+            width: 260px; 
+            height: 360px; 
+            position: relative; 
+        }
+
+        /* 修正後的晃動動畫：不再位移 */
+        @keyframes shakeAnim {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            50% { transform: rotate(-2deg); }
+            75% { transform: rotate(1deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .shake { animation: shakeAnim 0.2s infinite; }
+
+        .machine-top { 
+            width: 180px; height: 180px; 
+            background: rgba(255, 255, 255, 0.6); 
+            border: 6px solid #444; 
+            border-radius: 50%; 
+            position: absolute; top: 0; left: 40px; 
+            display: flex; flex-wrap: wrap; justify-content: center; align-content: center; 
+            overflow: hidden; z-index: 2; 
+        }
+
+        .machine-bottom { 
+            width: 200px; height: 160px; 
+            background: var(--primary-red); 
+            border: 6px solid #444; 
+            border-radius: 20px; 
+            position: absolute; bottom: 10px; left: 30px; 
+            z-index: 1; 
+        }
+
+        .knob { 
+            width: 50px; height: 50px; 
+            background: #fff; border: 4px solid #444; border-radius: 50%; 
+            position: absolute; top: 30px; left: 75px; 
+            cursor: pointer; transition: transform 0.5s; z-index: 3; 
+        }
+        .knob::after { content: ""; width: 30px; height: 6px; background: #444; position: absolute; top: 22px; left: 10px; border-radius: 3px; }
+        .spin { transform: rotate(360deg) !important; }
+
+        .exit { 
+            width: 60px; height: 35px; 
+            background: #333; border-radius: 10px 10px 0 0; 
+            position: absolute; bottom: 0; left: 70px; 
+        }
+
+        /* 掉出來的扭蛋 */
+        .out-ball {
+            width: 45px; height: 45px; 
+            border-radius: 50%; border: 3px solid #333;
+            position: absolute; bottom: 0; left: 77px; 
+            display: none; z-index: 5;
+        }
+
+        @keyframes ballDrop {
+            0% { transform: translateY(0); opacity: 1; }
+            40% { transform: translateY(60px) scaleY(0.8); }
+            60% { transform: translateY(40px) scaleY(1); }
+            100% { transform: translateY(55px); opacity: 1; }
+        }
+        .ball-animation { display: block !important; animation: ballDrop 0.6s ease-out forwards; }
+
+        /* 裝飾球 */
+        .ball { width: 30px; height: 30px; border-radius: 50%; margin: 2px; }
+
+        /* 彈窗與列表 */
+        #modal { 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+            text-align: center; z-index: 10; width: 280px; border: 4px solid var(--primary-red); 
+        }
         .history-list { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .history-list h3 { margin-top: 0; color: #333; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }
-        ul { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; }
+        ul { list-style: none; padding: 0; max-height: 150px; overflow-y: auto; text-align: left; }
         li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
-        button { background: #ef233c; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
+        button { background: var(--primary-red); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="marquee-container">
-        <marquee id="globalHistory">正在載入最新抽獎動態...</marquee>
+        <marquee id="globalHistory">正在載入抽獎動態...</marquee>
     </div>
 
-    <div id="gameContainer" style="display:none;">
-        <div class="gacha-machine" id="machine">
-            <div class="machine-top">
-                <div class="ball b1"></div><div class="ball b2"></div><div class="ball b3"></div>
-                <div class="ball b4"></div><div class="ball b1"></div><div class="ball b2"></div>
-                <div class="ball b3"></div><div class="ball b4"></div>
-            </div>
-            <div class="machine-bottom">
-                <div class="knob" id="knob" onclick="handleDraw()"></div>
-                <div class="exit"></div>
+    <div id="gameContainer" style="display:none; width: 100%; max-width: 400px;">
+        <div class="machine-container">
+            <div class="gacha-machine" id="machine">
+                <div class="machine-top">
+                    <div class="ball" style="background:#ff4d6d"></div><div class="ball" style="background:#48cae4"></div>
+                    <div class="ball" style="background:#ffbe0b"></div><div class="ball" style="background:#70e000"></div>
+                </div>
+                <div class="machine-bottom">
+                    <div class="knob" id="knob" onclick="handleDraw()"></div>
+                    <div class="exit"></div>
+                    <div id="outBall" class="out-ball"></div>
+                </div>
             </div>
         </div>
 
         <div class="history-list">
-            <h3>我的中獎紀錄</h3>
-            <ul id="myHistory"><li>尚未有抽獎紀錄</li></ul>
+            <h3>🎁 我的中獎紀錄</h3>
+            <ul id="myHistory"><li>尚未有紀錄</li></ul>
         </div>
     </div>
 
-    <!-- 中獎彈窗 -->
     <div id="modal">
         <h2>🎉 恭喜中獎！</h2>
-        <div id="pName" class="prize-name"></div>
-        <div id="pCode" class="prize-code"></div>
+        <div id="pName" style="font-size:20px; font-weight:bold; color:#ef233c; margin:10px;"></div>
+        <div id="pCode" style="background:#f0f0f0; padding:10px; border-radius:5px; font-family:monospace; margin-bottom:15px;"></div>
         <button onclick="closeModal()">收下獎項</button>
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbzF1T5Lz53ugHMzhxBVgvo2M6p6UGtvb2bpDvrl_bcOihR9vyE6Bv356pRv0_tbCEM/exec"; // 記得填入你的網址
-        const currentUser = sessionStorage.getItem('username'); // 假設登入時有存 username
+        const gasUrl = "https://script.google.com/macros/s/AKfycbzF1T5Lz53ugHMzhxBVgvo2M6p6UGtvb2bpDvrl_bcOihR9vyE6Bv356pRv0_tbCEM/exec"; 
+        const currentUser = sessionStorage.getItem('username');
+        let isSpinning = false;
 
-        // 1. 權限檢查
         if (!sessionStorage.getItem('loginToken') || !currentUser) {
             alert("請先登入！");
             window.location.href = 'index.html';
@@ -95,57 +177,70 @@
             updateMyHistory();
         }
 
-        // 2. 執行抽獎
         async function handleDraw() {
+            if (isSpinning) return;
+            isSpinning = true;
+
             const knob = document.getElementById('knob');
             const machine = document.getElementById('machine');
+            const outBall = document.getElementById('outBall');
             
             knob.classList.add('spin');
             machine.classList.add('shake');
+            outBall.classList.remove('ball-animation');
 
             try {
+                // 執行 GAS 抽獎 API
                 const res = await fetch(`${gasUrl}?action=draw&username=${encodeURIComponent(currentUser)}`);
                 const data = await res.json();
 
+                // 為了讓動畫有感覺，延遲 1.5 秒再停止晃動
                 setTimeout(() => {
                     machine.classList.remove('shake');
                     knob.classList.remove('spin');
 
                     if (data.success) {
-                        showModal(data.prizeName, data.prizeCode);
-                        initData();
+                        const colors = ["#ff4d6d", "#48cae4", "#ffbe0b", "#70e000"];
+                        outBall.style.background = colors[Math.floor(Math.random() * colors.length)];
+                        outBall.classList.add('ball-animation');
+
+                        setTimeout(() => {
+                            showModal(data.prizeName, data.prizeCode);
+                            initData();
+                            isSpinning = false;
+                        }, 700);
                     } else {
-                        alert(data.msg || "序號已抽完，下次請早！");
+                        alert(data.msg || "序號已抽完！");
+                        isSpinning = false;
                     }
                 }, 1500);
             } catch (e) {
-                alert("網路連線失敗");
+                alert("連線失敗，請檢查網路");
                 machine.classList.remove('shake');
+                knob.classList.remove('spin');
+                isSpinning = false;
             }
         }
 
-        // 3. 更新全局跑馬燈
         async function updateGlobalHistory() {
             try {
                 const res = await fetch(`${gasUrl}?action=getLogs`);
                 const data = await res.json();
                 const text = data.history.length > 0 
                     ? data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join(" 🌟 ")
-                    : "目前尚無人中獎，快來試試手氣！";
+                    : "快來成為第一個中獎者吧！";
                 document.getElementById('globalHistory').innerText = text;
             } catch (e) {}
         }
 
-        // 4. 更新個人紀錄
         async function updateMyHistory() {
             try {
                 const res = await fetch(`${gasUrl}?action=getLogs`);
                 const data = await res.json();
                 const myLogs = data.history.filter(h => h.user === currentUser);
                 const list = document.getElementById('myHistory');
-                
                 if (myLogs.length > 0) {
-                    list.innerHTML = myLogs.map(h => `<li>🎁 ${h.prize} <br> <small>序號: ${h.code || '已記錄'}</small></li>`).join("");
+                    list.innerHTML = myLogs.map(h => `<li>🎁 ${h.prize}<br><small style="color:#666">序號: ${h.code}</small></li>`).join("");
                 }
             } catch (e) {}
         }
@@ -158,9 +253,9 @@
 
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
+            document.getElementById('outBall').classList.remove('ball-animation');
         }
 
-        // 每分鐘自動重新整理一次跑馬燈
         setInterval(updateGlobalHistory, 60000);
     </script>
 </body>
