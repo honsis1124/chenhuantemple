@@ -123,6 +123,21 @@
         ul { list-style: none; padding: 0; max-height: 150px; overflow-y: auto; text-align: left; }
         li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
         button { background: var(--primary-red); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+
+        .copy-btn {
+        background: #444;
+        color: white;
+        border: none;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        margin-left: 8px;
+        transition: background 0.2s;
+        }
+        .copy-btn:hover { background: #000; }
+        .copy-btn:active { transform: scale(0.95); }
+
     </style>
 </head>
 <body>
@@ -239,10 +254,37 @@
                 const data = await res.json();
                 const myLogs = data.history.filter(h => h.user === currentUser);
                 const list = document.getElementById('myHistory');
+                
                 if (myLogs.length > 0) {
-                    list.innerHTML = myLogs.map(h => `<li>🎁 ${h.prize}<br><small style="color:#666">序號: ${h.code}</small></li>`).join("");
+                    list.innerHTML = myLogs.map(h => `
+                        <li>
+                            🎁 <b>${h.prize}</b><br>
+                            <small style="color:#666">序號: <span id="code-${h.code}">${h.code}</span></small>
+                            <button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製</button>
+                        </li>
+                    `).join("");
+                } else {
+                    list.innerHTML = "<li>尚未有紀錄</li>";
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("更新紀錄失敗", e);
+            }
+        }
+        
+        function copyToClipboard(text) {
+            // 使用現代瀏覽器的剪貼簿 API
+            navigator.clipboard.writeText(text).then(() => {
+                alert("序號已複製: " + text);
+            }).catch(err => {
+                // 備用方案：如果 API 失效
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert("序號已複製");
+            });
         }
 
         function showModal(name, code) {
