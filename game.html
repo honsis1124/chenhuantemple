@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>幸運抽獎</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div id="gameContent" style="display:none; text-align:center; margin-top:50px;">
+        <h1>🎉 歡迎進入抽獎遊戲！</h1>
+        <button id="drawBtn" style="font-size: 20px; padding: 20px;">點我抽獎</button>
+        <h2 id="result"></h2>
+    </div>
+
+    <script>
+        // 檢查登入狀態
+        if (!sessionStorage.getItem('loginToken')) {
+            alert("請先登入！");
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('gameContent').style.display = 'block';
+        }
+
+        // 簡單抽獎邏輯
+        const prizes = ["大獎：iPhone 15", "二獎：1000元禮券", "三獎：咖啡一杯", "銘謝惠顧"];
+        document.getElementById('drawBtn').onclick = function() {
+            const rand = Math.floor(Math.random() * prizes.length);
+            document.getElementById('result').innerText = "結果：" + prizes[rand];
+        };
+    </script>
+</body>
+</html>
