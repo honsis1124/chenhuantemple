@@ -1,54 +1,167 @@
-<!-- 在 gameContainer 內加入以下結構 -->
-<div id="gameContainer" style="display:none; max-width: 500px; margin: auto;">
-    
-    <!-- 歷史跑馬燈 -->
-    <div style="background: #333; color: #fff; padding: 5px; border-radius: 5px; margin-bottom: 10px;">
-        <marquee id="historyBox">載入中動態中...</marquee>
-    </div>
-
-    <!-- 原有的扭蛋機代碼... (保留上一部分的 HTML) -->
-    
-    <!-- 個人中獎查詢 -->
-    <div id="myPrizes" style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
-        <h3>我的中獎清單</h3>
-        <ul id="prizeList" style="text-align: left; font-size: 14px;"></ul>
-    </div>
-</div>
-
-<script>
-    const gasUrl = "你的GAS網址";
-    const username = "從登入資訊取得的用戶名"; // 建議登入時用 localStorage 存起來
-
-    // 初始化：讀取歷史紀錄
-    async function updateHistory() {
-        const res = await fetch(`${gasUrl}?action=getLogs`);
-        const data = await res.json();
-        const marquee = data.history.map(h => `恭喜帳號 "${h.user}" 抽中 "${h.prize}"`).join(" | ");
-        document.getElementById('historyBox').innerText = marquee;
-    }
-
-    // 抽獎邏輯修改
-    async function startGacha() {
-        // ... (保留搖晃動畫)
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸運扭蛋機 - 序號抽獎</title>
+    <style>
+        body { font-family: 'Microsoft JhengHei', sans-serif; background: #fdf0d5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         
-        try {
-            const res = await fetch(`${gasUrl}?action=draw&username=${encodeURIComponent(username)}`);
-            const data = await res.json();
-            
-            if (data.success) {
-                // 顯示結果
-                document.getElementById('prizeName').innerText = data.prizeName;
-                document.getElementById('prizeCode').innerHTML = `序號：<b style="color:blue">${data.prizeCode}</b>`;
-                document.getElementById('modal').style.display = 'block';
-                updateHistory(); // 更新跑馬燈
-            } else {
-                alert(data.msg);
-            }
-        } catch (e) {
-            alert("抽獎發生錯誤");
+        /* 跑馬燈 */
+        .marquee-container { width: 100%; max-width: 400px; background: #333; color: #ffbe0b; padding: 8px; border-radius: 20px; margin-bottom: 20px; font-size: 14px; overflow: hidden; }
+
+        /* 扭蛋機主體 */
+        .gacha-machine { width: 280px; height: 380px; position: relative; margin-bottom: 20px; }
+        .machine-top { width: 200px; height: 200px; background: rgba(255, 255, 255, 0.7); border: 6px solid #444; border-radius: 50%; position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; align-content: center; overflow: hidden; z-index: 2; }
+        .machine-bottom { width: 220px; height: 160px; background: #ef233c; border: 6px solid #444; border-radius: 20px; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1; }
+        .knob { width: 60px; height: 60px; background: #fff; border: 4px solid #444; border-radius: 50%; position: absolute; top: 30px; left: 50%; transform: translateX(-50%); cursor: pointer; transition: transform 0.5s; z-index: 3; }
+        .knob::after { content: ""; width: 40px; height: 8px; background: #444; position: absolute; top: 22px; left: 6px; border-radius: 4px; }
+        .exit { width: 70px; height: 40px; background: #333; border-radius: 10px 10px 0 0; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
+
+        /* 裝飾小球 */
+        .ball { width: 35px; height: 35px; border-radius: 50%; margin: 2px; }
+        .b1 { background: #ff4d6d; } .b2 { background: #48cae4; } .b3 { background: #ffbe0b; } .b4 { background: #70e000; }
+
+        /* 動畫 */
+        .shake { animation: shakeAnim 0.3s infinite; }
+        @keyframes shakeAnim {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            50% { transform: translateX(-51%) rotate(3deg); }
+            100% { transform: translateX(-50%) rotate(0deg); }
         }
-    }
-    
-    setInterval(updateHistory, 30000); // 每 30 秒自動更新一次跑馬燈
-    updateHistory();
-</script>
+        .spin { transform: translateX(-50%) rotate(360deg) !important; }
+
+        /* 彈窗 */
+        #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; z-index: 10; width: 280px; border: 4px solid #ef233c; }
+        .prize-name { font-size: 20px; color: #ef233c; font-weight: bold; margin: 10px 0; }
+        .prize-code { background: #f0f0f0; padding: 10px; border-radius: 5px; font-family: monospace; word-break: break-all; margin-bottom: 15px; }
+
+        /* 中獎清單 */
+        .history-list { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .history-list h3 { margin-top: 0; color: #333; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }
+        ul { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; }
+        li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        button { background: #ef233c; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="marquee-container">
+        <marquee id="globalHistory">正在載入最新抽獎動態...</marquee>
+    </div>
+
+    <div id="gameContainer" style="display:none;">
+        <div class="gacha-machine" id="machine">
+            <div class="machine-top">
+                <div class="ball b1"></div><div class="ball b2"></div><div class="ball b3"></div>
+                <div class="ball b4"></div><div class="ball b1"></div><div class="ball b2"></div>
+                <div class="ball b3"></div><div class="ball b4"></div>
+            </div>
+            <div class="machine-bottom">
+                <div class="knob" id="knob" onclick="handleDraw()"></div>
+                <div class="exit"></div>
+            </div>
+        </div>
+
+        <div class="history-list">
+            <h3>我的中獎紀錄</h3>
+            <ul id="myHistory"><li>尚未有抽獎紀錄</li></ul>
+        </div>
+    </div>
+
+    <!-- 中獎彈窗 -->
+    <div id="modal">
+        <h2>🎉 恭喜中獎！</h2>
+        <div id="pName" class="prize-name"></div>
+        <div id="pCode" class="prize-code"></div>
+        <button onclick="closeModal()">收下獎項</button>
+    </div>
+
+    <script>
+        const gasUrl = "https://script.google.com/macros/s/AKfycbwvxgHSlwGBzejjqMhDIb7nkNfzY_jxItZSsBM0iGwDr80zX7P1pu8vhHc46E2Q_rQ/exec"; // 記得填入你的網址
+        const currentUser = sessionStorage.getItem('username'); // 假設登入時有存 username
+
+        // 1. 權限檢查
+        if (!sessionStorage.getItem('loginToken') || !currentUser) {
+            alert("請先登入！");
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('gameContainer').style.display = 'block';
+            initData();
+        }
+
+        async function initData() {
+            updateGlobalHistory();
+            updateMyHistory();
+        }
+
+        // 2. 執行抽獎
+        async function handleDraw() {
+            const knob = document.getElementById('knob');
+            const machine = document.getElementById('machine');
+            
+            knob.classList.add('spin');
+            machine.classList.add('shake');
+
+            try {
+                const res = await fetch(`${gasUrl}?action=draw&username=${encodeURIComponent(currentUser)}`);
+                const data = await res.json();
+
+                setTimeout(() => {
+                    machine.classList.remove('shake');
+                    knob.classList.remove('spin');
+
+                    if (data.success) {
+                        showModal(data.prizeName, data.prizeCode);
+                        initData();
+                    } else {
+                        alert(data.msg || "序號已抽完，下次請早！");
+                    }
+                }, 1500);
+            } catch (e) {
+                alert("網路連線失敗");
+                machine.classList.remove('shake');
+            }
+        }
+
+        // 3. 更新全局跑馬燈
+        async function updateGlobalHistory() {
+            try {
+                const res = await fetch(`${gasUrl}?action=getLogs`);
+                const data = await res.json();
+                const text = data.history.length > 0 
+                    ? data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join(" 🌟 ")
+                    : "目前尚無人中獎，快來試試手氣！";
+                document.getElementById('globalHistory').innerText = text;
+            } catch (e) {}
+        }
+
+        // 4. 更新個人紀錄
+        async function updateMyHistory() {
+            try {
+                const res = await fetch(`${gasUrl}?action=getLogs`);
+                const data = await res.json();
+                const myLogs = data.history.filter(h => h.user === currentUser);
+                const list = document.getElementById('myHistory');
+                
+                if (myLogs.length > 0) {
+                    list.innerHTML = myLogs.map(h => `<li>🎁 ${h.prize} <br> <small>序號: ${h.code || '已記錄'}</small></li>`).join("");
+                }
+            } catch (e) {}
+        }
+
+        function showModal(name, code) {
+            document.getElementById('pName').innerText = name;
+            document.getElementById('pCode').innerText = code;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // 每分鐘自動重新整理一次跑馬燈
+        setInterval(updateGlobalHistory, 60000);
+    </script>
+</body>
+</html>
