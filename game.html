@@ -1,136 +1,54 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>幸運扭蛋機</title>
-    <style>
-        body { font-family: 'Microsoft JhengHei', sans-serif; background: #fdf0d5; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        
-        /* 扭蛋機主體 */
-        .gacha-machine { width: 280px; height: 400px; position: relative; }
-        
-        /* 透明球罩 */
-        .machine-top { width: 200px; height: 200px; background: rgba(255, 255, 255, 0.6); border: 8px solid #333; border-radius: 50%; position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; align-content: center; overflow: hidden; z-index: 2; }
-        
-        /* 機器底座 */
-        .machine-bottom { width: 220px; height: 180px; background: #ef233c; border: 8px solid #333; border-radius: 20px; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1; }
-
-        /* 旋鈕 */
-        .knob { width: 60px; height: 60px; background: #fff; border: 5px solid #333; border-radius: 50%; position: absolute; top: 40px; left: 50%; transform: translateX(-50%); cursor: pointer; transition: transform 0.5s; z-index: 3; }
-        .knob::after { content: ""; width: 40px; height: 10px; background: #333; position: absolute; top: 25px; left: 10px; border-radius: 5px; }
-
-        /* 出蛋口 */
-        .exit { width: 70px; height: 50px; background: #333; border-radius: 10px 10px 0 0; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
-
-        /* 裡面的小球 */
-        .ball { width: 40px; height: 40px; border-radius: 50%; margin: 2px; border: 2px solid rgba(0,0,0,0.1); }
-        .red { background: #ff4d6d; }
-        .blue { background: #48cae4; }
-        .yellow { background: #ffbe0b; }
-        .green { background: #70e000; }
-
-        /* 掉出來的蛋 */
-        #resultBall { width: 60px; height: 60px; border-radius: 50%; position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); display: none; z-index: 5; border: 3px solid #333; transition: all 0.5s ease-out; }
-
-        /* 動畫效果 */
-        .shake { animation: shakeAnim 0.5s infinite; }
-        @keyframes shakeAnim {
-            0% { transform: translateX(-50%) rotate(0deg); }
-            25% { transform: translateX(-52%) rotate(2deg); }
-            75% { transform: translateX(-48%) rotate(-2deg); }
-            100% { transform: translateX(-50%) rotate(0deg); }
-        }
-
-        .spin { transform: translateX(-50%) rotate(360deg) !important; }
-
-        /* 彈窗 */
-        #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; z-index: 10; border: 5px solid #ef233c; }
-        button { background: #ef233c; color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-    </style>
-</head>
-<body>
-
-    <div id="gameContainer" style="display:none;">
-        <div class="gacha-machine" id="machine">
-            <div class="machine-top" id="ballPit">
-                <!-- 預填小球 -->
-                <div class="ball red"></div><div class="ball blue"></div><div class="ball yellow"></div>
-                <div class="ball green"></div><div class="ball red"></div><div class="ball blue"></div>
-                <div class="ball yellow"></div><div class="ball green"></div><div class="ball red"></div>
-            </div>
-            <div class="machine-bottom">
-                <div class="knob" id="knob" onclick="startGacha()"></div>
-                <div class="exit"></div>
-                <div id="resultBall"></div>
-            </div>
-        </div>
-        <p style="text-align: center; font-weight: bold; color: #333;">點擊白色旋鈕抽獎！</p>
+<!-- 在 gameContainer 內加入以下結構 -->
+<div id="gameContainer" style="display:none; max-width: 500px; margin: auto;">
+    
+    <!-- 歷史跑馬燈 -->
+    <div style="background: #333; color: #fff; padding: 5px; border-radius: 5px; margin-bottom: 10px;">
+        <marquee id="historyBox">載入中動態中...</marquee>
     </div>
 
-    <div id="modal">
-        <h2 id="prizeText">🎉 恭喜獲獎！</h2>
-        <p id="prizeName" style="font-size: 24px; color: #ef233c; font-weight: bold;"></p>
-        <button onclick="closeModal()">確定</button>
+    <!-- 原有的扭蛋機代碼... (保留上一部分的 HTML) -->
+    
+    <!-- 個人中獎查詢 -->
+    <div id="myPrizes" style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
+        <h3>我的中獎清單</h3>
+        <ul id="prizeList" style="text-align: left; font-size: 14px;"></ul>
     </div>
+</div>
 
-    <script>
-        // 1. 安全檢查
-        if (!sessionStorage.getItem('loginToken')) {
-            alert("請先登入！");
-            window.location.href = 'index.html';
-        } else {
-            document.getElementById('gameContainer').style.display = 'block';
+<script>
+    const gasUrl = "你的GAS網址";
+    const username = "從登入資訊取得的用戶名"; // 建議登入時用 localStorage 存起來
+
+    // 初始化：讀取歷史紀錄
+    async function updateHistory() {
+        const res = await fetch(`${gasUrl}?action=getLogs`);
+        const data = await res.json();
+        const marquee = data.history.map(h => `恭喜帳號 "${h.user}" 抽中 "${h.prize}"`).join(" | ");
+        document.getElementById('historyBox').innerText = marquee;
+    }
+
+    // 抽獎邏輯修改
+    async function startGacha() {
+        // ... (保留搖晃動畫)
+        
+        try {
+            const res = await fetch(`${gasUrl}?action=draw&username=${encodeURIComponent(username)}`);
+            const data = await res.json();
+            
+            if (data.success) {
+                // 顯示結果
+                document.getElementById('prizeName').innerText = data.prizeName;
+                document.getElementById('prizeCode').innerHTML = `序號：<b style="color:blue">${data.prizeCode}</b>`;
+                document.getElementById('modal').style.display = 'block';
+                updateHistory(); // 更新跑馬燈
+            } else {
+                alert(data.msg);
+            }
+        } catch (e) {
+            alert("抽獎發生錯誤");
         }
-
-        const prizes = ["iPhone 15", "1000元禮券", "500元禮券", "咖啡一杯", "精美小禮物", "銘謝惠顧"];
-        const colors = ["#ff4d6d", "#48cae4", "#ffbe0b", "#70e000", "#9b5de5"];
-        let isSpinning = false;
-
-        async function startGacha() {
-            if (isSpinning) return;
-            isSpinning = true;
-
-            const knob = document.getElementById('knob');
-            const machine = document.getElementById('machine');
-            const resBall = document.getElementById('resultBall');
-
-            // 旋鈕旋轉動畫
-            knob.classList.add('spin');
-            // 機器晃動
-            machine.classList.add('shake');
-
-            // 模擬抽獎延遲
-            setTimeout(() => {
-                machine.classList.remove('shake');
-                knob.classList.remove('spin');
-                
-                // 隨機選一個獎品
-                const prize = prizes[Math.floor(Math.random() * prizes.length)];
-                const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-                // 顯示掉出的蛋
-                resBall.style.backgroundColor = randomColor;
-                resBall.style.display = 'block';
-                resBall.style.bottom = '-60px'; // 掉到出口位置
-
-                setTimeout(() => {
-                    showResult(prize);
-                }, 600);
-            }, 1500);
-        }
-
-        function showResult(prize) {
-            document.getElementById('prizeName').innerText = prize;
-            document.getElementById('modal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('resultBall').style.display = 'none';
-            document.getElementById('resultBall').style.bottom = '-20px';
-            isSpinning = false;
-        }
-    </script>
-</body>
-</html>
+    }
+    
+    setInterval(updateHistory, 30000); // 每 30 秒自動更新一次跑馬燈
+    updateHistory();
+</script>
