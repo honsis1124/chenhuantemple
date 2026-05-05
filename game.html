@@ -240,7 +240,7 @@
                 const myLogs = data.history.filter(h => h.user === currentUser);
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
-                    list.innerHTML = myLogs.map(h => `<li>🎁 ${h.prize}<br><small style="color:#666">序號: ${h.code}</small></li>`).join("");
+                    list.innerHTML = myLogs.map(h => `<li>🎁 ${h.prizes}<br><small style="color:#666">序號: ${h.code}</small></li>`).join("");
                 }
             } catch (e) {}
         }
