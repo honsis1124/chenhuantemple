@@ -5,37 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>幸運扭蛋機 - 序號抽獎</title>
     <style>
-        :root { --primary-red: #ef233c; --dark-blue: #2b2d42; --gold: #ffbe0b; }
-        body { font-family: 'Microsoft JhengHei', sans-serif; background: #fdf0d5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        :root {
+            --primary-red: #ef233c;
+            --dark-blue: #2b2d42;
+            --gold: #ffbe0b;
+        }
+
+        body { 
+            font-family: 'Microsoft JhengHei', sans-serif; 
+            background: #fdf0d5; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+        }
         
-        /* 跑馬燈容器 */
-        .marquee-container { width: 100%; max-width: 400px; background: var(--dark-blue); color: var(--gold); padding: 10px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-size: 14px; }
-        
-        /* 剩餘次數顯示 */
-        .chance-tag { background: white; padding: 8px 20px; border-radius: 20px; border: 3px solid var(--primary-red); color: var(--primary-red); font-weight: bold; margin-bottom: 15px; font-size: 18px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .marquee-container { 
+            width: 100%; 
+            max-width: 400px; 
+            background: var(--dark-blue); 
+            color: var(--gold); 
+            padding: 10px; 
+            border-radius: 25px; 
+            margin-bottom: 30px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
 
         .machine-container { width: 100%; display: flex; justify-content: center; position: relative; margin-bottom: 50px; }
         .gacha-machine { width: 260px; height: 360px; position: relative; }
 
-        @keyframes shakeAnim { 0% { transform: rotate(0deg); } 25% { transform: rotate(2deg); } 50% { transform: rotate(-2deg); } 100% { transform: rotate(0deg); } }
+        @keyframes shakeAnim {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            50% { transform: rotate(-2deg); }
+            100% { transform: rotate(0deg); }
+        }
         .shake { animation: shakeAnim 0.2s infinite; }
 
-        .machine-top { width: 180px; height: 180px; background: rgba(255, 255, 255, 0.6); border: 6px solid #444; border-radius: 50%; position: absolute; top: 0; left: 40px; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; overflow: hidden; z-index: 2; }
-        .machine-bottom { width: 200px; height: 160px; background: var(--primary-red); border: 6px solid #444; border-radius: 20px; position: absolute; bottom: 10px; left: 30px; z-index: 1; }
-        .knob { width: 50px; height: 50px; background: #fff; border: 4px solid #444; border-radius: 50%; position: absolute; top: 30px; left: 75px; cursor: pointer; z-index: 3; }
+        .machine-top { 
+            width: 180px; height: 180px; 
+            background: rgba(255, 255, 255, 0.6); 
+            border: 6px solid #444; border-radius: 50%; 
+            position: absolute; top: 0; left: 40px; 
+            display: flex; flex-wrap: wrap; justify-content: center; align-content: center; 
+            overflow: hidden; z-index: 2; 
+        }
+
+        .machine-bottom { 
+            width: 200px; height: 160px; 
+            background: var(--primary-red); 
+            border: 6px solid #444; border-radius: 20px; 
+            position: absolute; bottom: 10px; left: 30px; z-index: 1; 
+        }
+
+        .knob { 
+            width: 50px; height: 50px; background: #fff; border: 4px solid #444; border-radius: 50%; 
+            position: absolute; top: 30px; left: 75px; cursor: pointer; z-index: 3; 
+        }
         .knob::after { content: ""; width: 30px; height: 6px; background: #444; position: absolute; top: 22px; left: 10px; border-radius: 3px; }
         .spin { transform: rotate(360deg) !important; transition: transform 0.5s; }
+
         .exit { width: 60px; height: 35px; background: #333; border-radius: 10px 10px 0 0; position: absolute; bottom: 0; left: 70px; }
-        
         .out-ball { width: 45px; height: 45px; border-radius: 50%; border: 3px solid #333; position: absolute; bottom: 0; left: 77px; display: none; z-index: 5; }
-        @keyframes ballDrop { 0% { transform: translateY(0); opacity: 1; } 40% { transform: translateY(60px) scaleY(0.8); } 100% { transform: translateY(55px); opacity: 1; } }
+
+        @keyframes ballDrop {
+            0% { transform: translateY(0); opacity: 1; }
+            40% { transform: translateY(60px) scaleY(0.8); }
+            100% { transform: translateY(55px); opacity: 1; }
+        }
         .ball-animation { display: block !important; animation: ballDrop 0.6s ease-out forwards; }
 
-        #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); text-align: center; z-index: 10; width: 280px; border: 4px solid var(--primary-red); }
+        /* 彈窗與按鈕樣式 */
+        #modal { 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+            text-align: center; z-index: 10; width: 280px; border: 4px solid var(--primary-red); 
+        }
         .prize-name { font-size: 20px; font-weight: bold; color: var(--primary-red); margin: 10px; }
         .prize-code-box { background: #f0f0f0; padding: 12px; border-radius: 8px; font-family: monospace; margin-bottom: 15px; position: relative; word-break: break-all; }
+        
         .copy-btn { background: #444; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 5px; }
-        .main-btn { background: var(--primary-red); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .copy-btn:hover { background: #000; }
+        .main-btn { background: var(--primary-red); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 5px; }
 
         .history-list { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 20px; }
         ul { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; text-align: left; }
@@ -45,12 +98,10 @@
 <body>
 
     <div class="marquee-container">
-        <marquee id="globalHistory">載入抽獎動態中...</marquee>
+        <marquee id="globalHistory">正在載入最新動態...</marquee>
     </div>
 
-    <div class="chance-tag">今日剩餘次數：<span id="remainingCount">?</span> 次</div>
-
-    <div id="gameContainer" style="display:none; width: 100%; max-width: 400px; text-align: center;">
+    <div id="gameContainer" style="display:none; width: 100%; max-width: 400px;">
         <div class="machine-container">
             <div class="gacha-machine" id="machine">
                 <div class="machine-top">
@@ -72,6 +123,7 @@
         </div>
     </div>
 
+    <!-- 中獎彈窗 -->
     <div id="modal">
         <h2>🎉 恭喜中獎！</h2>
         <div id="pName" class="prize-name"></div>
@@ -83,7 +135,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbyMx0WKSX-ShVgRjCtLW-ONMBiLlp628mAvCdo-QJr0dinHnH4wczl5-gk8HgOT4fY/exec"; 
+        const gasUrl = "https://script.google.com/macros/s/AKfycbw6LXlnbHwMl4v9ypO2d1SlvSDjv28pOMFd-cyFRV9PtI9tIUrQtTtxDoAGpoEtQpY/exec"; 
         const currentUser = sessionStorage.getItem('username');
         let isSpinning = false;
 
@@ -96,64 +148,30 @@
         }
 
         async function initData() {
-            // 抓一次資料更新全局跑馬燈與個人紀錄（包含剩餘次數計算）
-            updatePageData();
+            updateGlobalHistory();
+            updateMyHistory();
         }
 
+        // 複製功能函式
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => { alert("序號已複製！"); }).catch(() => {
-                const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select();
-                document.execCommand('copy'); document.body.removeChild(el); alert("序號已複製！");
+            navigator.clipboard.writeText(text).then(() => {
+                alert("序號已複製成功！");
+            }).catch(() => {
+                // 備用方案
+                const el = document.createElement('textarea');
+                el.value = text;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                alert("序號已複製成功！");
             });
-        }
-
-        async function updatePageData() {
-            try {
-                const res = await fetch(`${gasUrl}?action=getLogs&t=${new Date().getTime()}`);
-                const data = await res.json();
-                
-                // 1. 更新跑馬燈 (修正錯誤的地方)
-                const marquee = document.getElementById('globalHistory');
-                if (data.history && data.history.length > 0) {
-                    const text = data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join("  🌟  ");
-                    marquee.innerText = text;
-                } else {
-                    marquee.innerText = "快來搶首抽！大獎等你拿！";
-                }
-
-                // 2. 計算剩餘次數 (早上 10:00 重置)
-                const now = new Date();
-                let resetTime = new Date();
-                resetTime.setHours(10, 0, 0, 0);
-                if (now < resetTime) resetTime.setDate(resetTime.getDate() - 1);
-                
-                const todayLogs = data.history.filter(h => h.user === currentUser && new Date(h.time) >= resetTime);
-                document.getElementById('remainingCount').innerText = Math.max(0, 3 - todayLogs.length);
-
-                // 3. 更新我的紀錄
-                const myLogs = data.history.filter(h => h.user === currentUser);
-                const list = document.getElementById('myHistory');
-                if (myLogs.length > 0) {
-                    list.innerHTML = myLogs.map(h => `
-                        <li>
-                            <b>${h.prize}</b> 
-                            <button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製</button><br>
-                            <small style="color:#666">${h.code}</small>
-                        </li>
-                    `).join("");
-                }
-            } catch (e) { console.error("資料更新失敗", e); }
         }
 
         async function handleDraw() {
             if (isSpinning) return;
-            const currentCount = parseInt(document.getElementById('remainingCount').innerText);
-            if (currentCount <= 0) {
-                alert("今日次數已用完，請等早上 10 點重置！");
-                return;
-            }
-
             isSpinning = true;
+
             const knob = document.getElementById('knob');
             const machine = document.getElementById('machine');
             const outBall = document.getElementById('outBall');
@@ -171,30 +189,64 @@
                     knob.classList.remove('spin');
 
                     if (data.success) {
-                        // 視覺上立即扣次數
-                        document.getElementById('remainingCount').innerText = currentCount - 1;
-                        
                         outBall.style.background = ["#ff4d6d", "#48cae4", "#ffbe0b"][Math.floor(Math.random()*3)];
                         outBall.classList.add('ball-animation');
 
                         setTimeout(() => {
                             document.getElementById('pName').innerText = data.prizeName;
                             document.getElementById('pCode').innerText = data.prizeCode;
+                            // 綁定彈窗複製按鈕事件
                             document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
                             document.getElementById('modal').style.display = 'block';
-                            updatePageData(); // 後台同步更新
+                            initData();
                             isSpinning = false;
                         }, 700);
                     } else {
-                        alert(data.msg);
+                        alert(data.msg || "序號已抽完！");
                         isSpinning = false;
-                        updatePageData();
                     }
                 }, 1500);
             } catch (e) {
-                alert("網路不穩，請重新整理");
-                machine.classList.remove('shake'); knob.classList.remove('spin'); isSpinning = false;
+                alert("連線失敗");
+                machine.classList.remove('shake');
+                knob.classList.remove('spin');
+                isSpinning = false;
             }
+        }
+
+        async function updateGlobalHistory() {
+            try {
+                const res = await fetch(`${gasUrl}?action=getLogs`);
+                const data = await res.json();
+                const text = data.history.length > 0 
+                    ? data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join("  🌟  ")
+                    : "快來抽獎吧！";
+                document.getElementById('globalHistory').innerText = text;
+            } catch (e) {}
+        }
+
+        async function updateMyHistory() {
+            try {
+                const res = await fetch(`${gasUrl}?action=getLogs`);
+                const data = await res.json();
+                const myLogs = data.history.filter(h => h.user === currentUser);
+                const list = document.getElementById('myHistory');
+                if (myLogs.length > 0) {
+                    list.innerHTML = myLogs.map(h => `
+                        <li>
+                            <b>${h.prize}</b> 
+                            <button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button><br>
+                            <small style="color:#666">${h.code}</small>
+                        </li>
+                    `).join("");
+                }
+            } catch (e) {}
+        }
+
+        // 在 initData 或是 handleDraw 成功後呼叫
+        async function updateRemainingCount() {
+            // 你可以新增一個 action=getCount 來專門抓次數，或者在 draw 的結果中回傳
+            // 這裡示範簡單的提示邏輯
         }
 
         function closeModal() {
@@ -202,8 +254,7 @@
             document.getElementById('outBall').style.display = 'none';
         }
 
-        // 每 60 秒自動背景更新一次資料
-        setInterval(updatePageData, 60000);
+        setInterval(updateGlobalHistory, 60000);
     </script>
 </body>
 </html>
