@@ -8,10 +8,11 @@
         :root { --primary-red: #ef233c; --dark-blue: #2b2d42; --gold: #ffbe0b; }
         body { font-family: 'Microsoft JhengHei', sans-serif; background: #fdf0d5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         
-        .marquee-container { width: 100%; max-width: 400px; background: var(--dark-blue); color: var(--gold); padding: 10px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        /* 跑馬燈容器 */
+        .marquee-container { width: 100%; max-width: 400px; background: var(--dark-blue); color: var(--gold); padding: 10px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-size: 14px; }
         
         /* 剩餘次數顯示 */
-        .chance-tag { background: white; padding: 5px 15px; border-radius: 15px; border: 2px solid var(--primary-red); color: var(--primary-red); font-weight: bold; margin-bottom: 10px; font-size: 16px; }
+        .chance-tag { background: white; padding: 8px 20px; border-radius: 20px; border: 3px solid var(--primary-red); color: var(--primary-red); font-weight: bold; margin-bottom: 15px; font-size: 18px; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
 
         .machine-container { width: 100%; display: flex; justify-content: center; position: relative; margin-bottom: 50px; }
         .gacha-machine { width: 260px; height: 360px; position: relative; }
@@ -25,8 +26,8 @@
         .knob::after { content: ""; width: 30px; height: 6px; background: #444; position: absolute; top: 22px; left: 10px; border-radius: 3px; }
         .spin { transform: rotate(360deg) !important; transition: transform 0.5s; }
         .exit { width: 60px; height: 35px; background: #333; border-radius: 10px 10px 0 0; position: absolute; bottom: 0; left: 70px; }
+        
         .out-ball { width: 45px; height: 45px; border-radius: 50%; border: 3px solid #333; position: absolute; bottom: 0; left: 77px; display: none; z-index: 5; }
-
         @keyframes ballDrop { 0% { transform: translateY(0); opacity: 1; } 40% { transform: translateY(60px) scaleY(0.8); } 100% { transform: translateY(55px); opacity: 1; } }
         .ball-animation { display: block !important; animation: ballDrop 0.6s ease-out forwards; }
 
@@ -44,11 +45,10 @@
 <body>
 
     <div class="marquee-container">
-        <marquee id="globalHistory">正在載入最新動態...</marquee>
+        <marquee id="globalHistory">載入抽獎動態中...</marquee>
     </div>
 
-    <!-- 顯示剩餘次數 -->
-    <div class="chance-tag">今日剩餘次數：<span id="remainingCount">計算中...</span></div>
+    <div class="chance-tag">今日剩餘次數：<span id="remainingCount">?</span> 次</div>
 
     <div id="gameContainer" style="display:none; width: 100%; max-width: 400px; text-align: center;">
         <div class="machine-container">
@@ -96,97 +96,41 @@
         }
 
         async function initData() {
-            updateGlobalHistory();
-            updateMyHistory();
+            // 抓一次資料更新全局跑馬燈與個人紀錄（包含剩餘次數計算）
+            updatePageData();
         }
 
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => { alert("序號已複製成功！"); }).catch(() => {
+            navigator.clipboard.writeText(text).then(() => { alert("序號已複製！"); }).catch(() => {
                 const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select();
-                document.execCommand('copy'); document.body.removeChild(el); alert("序號已複製成功！");
+                document.execCommand('copy'); document.body.removeChild(el); alert("序號已複製！");
             });
         }
 
-        // 抽獎邏輯：成功後立即反應次數
-        async function handleDraw() {
-            if (isSpinning) return;
-            const currentRemain = parseInt(document.getElementById('remainingCount').innerText);
-            if (currentRemain <= 0) {
-                alert("今天次數已用完囉！");
-                return;
-            }
-        
-            isSpinning = true;
-            const knob = document.getElementById('knob');
-            const machine = document.getElementById('machine');
-            const outBall = document.getElementById('outBall');
-            
-            knob.classList.add('spin');
-            machine.classList.add('shake');
-        
+        async function updatePageData() {
             try {
-                const res = await fetch(`${gasUrl}?action=draw&username=${encodeURIComponent(currentUser)}`);
-                const data = await res.json();
-        
-                setTimeout(() => {
-                    machine.classList.remove('shake');
-                    knob.classList.remove('spin');
-        
-                    if (data.success) {
-                        // [關鍵]：立即更新畫面上的剩餘次數，不用等重新抓取
-                        document.getElementById('remainingCount').innerText = currentRemain - 1;
-        
-                        outBall.style.background = ["#ff4d6d", "#48cae4", "#ffbe0b"][Math.floor(Math.random()*3)];
-                        outBall.classList.add('ball-animation');
-        
-                        setTimeout(() => {
-                            showModal(data.prizeName, data.prizeCode);
-                            updateMyHistory(); // 同步抓取最新清單
-                            isSpinning = false;
-                        }, 700);
-                    } else {
-                        alert(data.msg);
-                        isSpinning = false;
-                        updateMyHistory(); // 重新整理次數
-                    }
-                }, 1500);
-            } catch (e) {
-                alert("連線失敗");
-                machine.classList.remove('shake'); knob.classList.remove('spin'); isSpinning = false;
-            }
-        }
-
-        async function updateGlobalHistory() {
-            try {
-                const res = await fetch(`${gasUrl}?action=getLogs`);
-                const data = await res.json();
-                const text = data.history.length > 0 
-                    ? data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join("  🌟  ")
-                    : "快來抽獎吧！";
-                document.getElementById('globalHistory').innerText = text;
-            } catch (e) {}
-        }
-
-        // 更新紀錄與次數：加強時間判定
-        async function updateMyHistory() {
-            try {
-                const res = await fetch(`${gasUrl}?action=getLogs&t=${new Date().getTime()}`); // 加 t 避免瀏覽器快取
+                const res = await fetch(`${gasUrl}?action=getLogs&t=${new Date().getTime()}`);
                 const data = await res.json();
                 
+                // 1. 更新跑馬燈 (修正錯誤的地方)
+                const marquee = document.getElementById('globalHistory');
+                if (data.history && data.history.length > 0) {
+                    const text = data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join("  🌟  ");
+                    marquee.innerText = text;
+                } else {
+                    marquee.innerText = "快來搶首抽！大獎等你拿！";
+                }
+
+                // 2. 計算剩餘次數 (早上 10:00 重置)
                 const now = new Date();
                 let resetTime = new Date();
                 resetTime.setHours(10, 0, 0, 0);
                 if (now < resetTime) resetTime.setDate(resetTime.getDate() - 1);
                 
-                // 篩選今日紀錄
-                const todayLogs = data.history.filter(h => {
-                    return h.user === currentUser && new Date(h.time) >= resetTime;
-                });
-                
-                // 更新剩餘次數
+                const todayLogs = data.history.filter(h => h.user === currentUser && new Date(h.time) >= resetTime);
                 document.getElementById('remainingCount').innerText = Math.max(0, 3 - todayLogs.length);
-        
-                // 更新清單
+
+                // 3. 更新我的紀錄
                 const myLogs = data.history.filter(h => h.user === currentUser);
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
@@ -198,7 +142,59 @@
                         </li>
                     `).join("");
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("資料更新失敗", e); }
+        }
+
+        async function handleDraw() {
+            if (isSpinning) return;
+            const currentCount = parseInt(document.getElementById('remainingCount').innerText);
+            if (currentCount <= 0) {
+                alert("今日次數已用完，請等早上 10 點重置！");
+                return;
+            }
+
+            isSpinning = true;
+            const knob = document.getElementById('knob');
+            const machine = document.getElementById('machine');
+            const outBall = document.getElementById('outBall');
+            
+            knob.classList.add('spin');
+            machine.classList.add('shake');
+            outBall.classList.remove('ball-animation');
+
+            try {
+                const res = await fetch(`${gasUrl}?action=draw&username=${encodeURIComponent(currentUser)}`);
+                const data = await res.json();
+
+                setTimeout(() => {
+                    machine.classList.remove('shake');
+                    knob.classList.remove('spin');
+
+                    if (data.success) {
+                        // 視覺上立即扣次數
+                        document.getElementById('remainingCount').innerText = currentCount - 1;
+                        
+                        outBall.style.background = ["#ff4d6d", "#48cae4", "#ffbe0b"][Math.floor(Math.random()*3)];
+                        outBall.classList.add('ball-animation');
+
+                        setTimeout(() => {
+                            document.getElementById('pName').innerText = data.prizeName;
+                            document.getElementById('pCode').innerText = data.prizeCode;
+                            document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
+                            document.getElementById('modal').style.display = 'block';
+                            updatePageData(); // 後台同步更新
+                            isSpinning = false;
+                        }, 700);
+                    } else {
+                        alert(data.msg);
+                        isSpinning = false;
+                        updatePageData();
+                    }
+                }, 1500);
+            } catch (e) {
+                alert("網路不穩，請重新整理");
+                machine.classList.remove('shake'); knob.classList.remove('spin'); isSpinning = false;
+            }
         }
 
         function closeModal() {
@@ -206,7 +202,8 @@
             document.getElementById('outBall').style.display = 'none';
         }
 
-        setInterval(updateGlobalHistory, 60000);
+        // 每 60 秒自動背景更新一次資料
+        setInterval(updatePageData, 60000);
     </script>
 </body>
 </html>
