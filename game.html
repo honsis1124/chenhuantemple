@@ -83,7 +83,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbxvFJhfV6LQ0lp-R1QXPaVfSS1_Rv046AB2PW3EbB-x8DZL3xWadacaZ-dBNnDBSA/exec"; 
+        const gasUrl = "https://script.google.com/macros/s/AKfycbyMx0WKSX-ShVgRjCtLW-ONMBiLlp628mAvCdo-QJr0dinHnH4wczl5-gk8HgOT4fY/exec"; 
         const currentUser = sessionStorage.getItem('username');
         let isSpinning = false;
 
@@ -107,41 +107,47 @@
             });
         }
 
+        // 抽獎邏輯：成功後立即反應次數
         async function handleDraw() {
             if (isSpinning) return;
+            const currentRemain = parseInt(document.getElementById('remainingCount').innerText);
+            if (currentRemain <= 0) {
+                alert("今天次數已用完囉！");
+                return;
+            }
+        
             isSpinning = true;
-
             const knob = document.getElementById('knob');
             const machine = document.getElementById('machine');
             const outBall = document.getElementById('outBall');
             
             knob.classList.add('spin');
             machine.classList.add('shake');
-            outBall.classList.remove('ball-animation');
-
+        
             try {
                 const res = await fetch(`${gasUrl}?action=draw&username=${encodeURIComponent(currentUser)}`);
                 const data = await res.json();
-
+        
                 setTimeout(() => {
                     machine.classList.remove('shake');
                     knob.classList.remove('spin');
-
+        
                     if (data.success) {
+                        // [關鍵]：立即更新畫面上的剩餘次數，不用等重新抓取
+                        document.getElementById('remainingCount').innerText = currentRemain - 1;
+        
                         outBall.style.background = ["#ff4d6d", "#48cae4", "#ffbe0b"][Math.floor(Math.random()*3)];
                         outBall.classList.add('ball-animation');
-
+        
                         setTimeout(() => {
-                            document.getElementById('pName').innerText = data.prizeName;
-                            document.getElementById('pCode').innerText = data.prizeCode;
-                            document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
-                            document.getElementById('modal').style.display = 'block';
-                            initData();
+                            showModal(data.prizeName, data.prizeCode);
+                            updateMyHistory(); // 同步抓取最新清單
                             isSpinning = false;
                         }, 700);
                     } else {
-                        alert(data.msg || "次數已滿！");
+                        alert(data.msg);
                         isSpinning = false;
+                        updateMyHistory(); // 重新整理次數
                     }
                 }, 1500);
             } catch (e) {
@@ -161,22 +167,26 @@
             } catch (e) {}
         }
 
+        // 更新紀錄與次數：加強時間判定
         async function updateMyHistory() {
             try {
-                const res = await fetch(`${gasUrl}?action=getLogs`);
+                const res = await fetch(`${gasUrl}?action=getLogs&t=${new Date().getTime()}`); // 加 t 避免瀏覽器快取
                 const data = await res.json();
                 
-                // 1. 計算剩餘次數 (邏輯同 GAS: 10:00 重置)
                 const now = new Date();
                 let resetTime = new Date();
                 resetTime.setHours(10, 0, 0, 0);
                 if (now < resetTime) resetTime.setDate(resetTime.getDate() - 1);
                 
-                const todayLogs = data.history.filter(h => h.user === currentUser && new Date(h.time) >= resetTime);
-                const remain = Math.max(0, 3 - todayLogs.length);
-                document.getElementById('remainingCount').innerText = remain;
-
-                // 2. 更新個人清單
+                // 篩選今日紀錄
+                const todayLogs = data.history.filter(h => {
+                    return h.user === currentUser && new Date(h.time) >= resetTime;
+                });
+                
+                // 更新剩餘次數
+                document.getElementById('remainingCount').innerText = Math.max(0, 3 - todayLogs.length);
+        
+                // 更新清單
                 const myLogs = data.history.filter(h => h.user === currentUser);
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
