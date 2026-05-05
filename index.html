@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>抽獎小遊戲 - 登入</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; }
+        .login-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>抽獎登入</h2>
+        <input type="text" id="user" placeholder="帳號">
+        <input type="password" id="pass" placeholder="密碼">
+        <button onclick="handleLogin()">登入</button>
+        <p id="msg" style="color:red;"></p>
+    </div>
+
+    <script>
+        async function handleLogin() {
+            const user = document.getElementById('user').value;
+            const pass = document.getElementById('pass').value;
+            const btn = document.querySelector('button');
+            const msg = document.getElementById('msg');
+
+            btn.disabled = true;
+            msg.innerText = "驗證中...";
+
+            try {
+                const response = await fetch('你的GAS網址', {
+                    method: 'POST',
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    sessionStorage.setItem('loginToken', data.token); // 儲存簡單的登入權杖
+                    window.location.href = 'game.html';
+                } else {
+                    msg.innerText = "帳號或密碼錯誤！";
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                msg.innerText = "連線失敗，請稍後再試";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
