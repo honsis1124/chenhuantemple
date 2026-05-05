@@ -243,6 +243,12 @@
             } catch (e) {}
         }
 
+        // 在 initData 或是 handleDraw 成功後呼叫
+        async function updateRemainingCount() {
+            // 你可以新增一個 action=getCount 來專門抓次數，或者在 draw 的結果中回傳
+            // 這裡示範簡單的提示邏輯
+        }
+
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
             document.getElementById('outBall').style.display = 'none';
