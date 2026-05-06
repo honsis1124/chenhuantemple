@@ -191,12 +191,22 @@
                     if (data.success) {
                         outBall.style.background = ["#ff4d6d", "#48cae4", "#ffbe0b"][Math.floor(Math.random()*3)];
                         outBall.classList.add('ball-animation');
-
+                    
                         setTimeout(() => {
                             document.getElementById('pName').innerText = data.prizeName;
-                            document.getElementById('pCode').innerText = data.prizeCode;
-                            // 綁定彈窗複製按鈕事件
-                            document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
+                    
+                            // ⭐ 核心：判斷是否中獎
+                            if (data.isWin) {
+                                // 中獎
+                                document.getElementById('pCode').innerText = data.prizeCode;
+                                document.getElementById('modalCopyBtn').style.display = 'inline-block';
+                                document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
+                            } else {
+                                // ❌ 銘謝惠顧
+                                document.getElementById('pCode').innerText = "再接再厲！";
+                                document.getElementById('modalCopyBtn').style.display = 'none';
+                            }
+                    
                             document.getElementById('modal').style.display = 'block';
                             initData();
                             isSpinning = false;
