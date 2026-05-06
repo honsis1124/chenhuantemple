@@ -244,18 +244,13 @@
                 const myLogs = data.history.filter(h => h.user === currentUser);
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
-                    list.innerHTML = myLogs.map(h => {
-                        if (h.prize === "銘謝惠顧") {
-                            return `<li style="color: #999;"><b>${h.prize}</b><br><small>下次好運就來了！</small></li>`;
-                        } else {
-                            return `
-                                <li>
-                                    <b>${h.prize}</b> 
-                                    <button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button><br>
-                                    <small style="color:#666">${h.code}</small>
-                                </li>`;
-                        }
-                    }).join("");
+                    list.innerHTML = myLogs.map(h => `
+                        <li>
+                            <b>${h.prize}</b> 
+                            <button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button><br>
+                            <small style="color:#666">${h.code}</small>
+                        </li>
+                    `).join("");
                 }
             } catch (e) {}
         }
