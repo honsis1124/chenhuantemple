@@ -291,8 +291,15 @@
                     list.innerHTML = myLogs.map(h => `
                         <li>
                             <b>${h.prize}</b> 
-                            <button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button><br>
-                            <small style="color:#666">${h.code}</small>
+                            ${
+                                h.code !== "NONE"
+                                ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>`
+                                : ""
+                            }
+                            <br>
+                            <small style="color:#666">
+                                ${h.code !== "NONE" ? h.code : "未中獎"}
+                            </small>
                         </li>
                     `).join("");
                 }
