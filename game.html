@@ -197,6 +197,7 @@
                             document.getElementById('pCode').innerText = data.prizeCode;
                             document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
                             document.getElementById('modal').style.display = 'block';
+                            alert(`今日剩餘抽獎次數：${data.remaining}`);
                             initData();
                             isSpinning = false;
                         }, 700);
