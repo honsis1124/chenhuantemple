@@ -201,35 +201,21 @@
                     knob.classList.remove('spin');
 
                     if (data.success) {
-                        // 根據中獎與否決定球的顏色
-                        outBall.style.background = data.isWin ? "#ffbe0b" : "#ccc"; // 中獎金色，沒中灰色
+                        outBall.style.background = ["#ff4d6d", "#48cae4", "#ffbe0b"][Math.floor(Math.random()*3)];
                         outBall.classList.add('ball-animation');
-                    
+
                         setTimeout(() => {
-                            const pNameEl = document.getElementById('pName');
-                            const pCodeEl = document.getElementById('pCode');
-                            const copyBtn = document.getElementById('modalCopyBtn');
-                            const codeBox = document.querySelector('.prize-code-box');
-                    
-                            pNameEl.innerText = data.prizeName;
-                            
-                            if (data.isWin) {
-                                // 中獎了
-                                document.querySelector('#modal h2').innerText = "🎉 恭喜中獎！";
-                                pCodeEl.innerText = data.prizeCode;
-                                codeBox.style.display = "block";
-                                copyBtn.onclick = () => copyToClipboard(data.prizeCode);
-                            } else {
-                                // 銘謝惠顧
-                                document.querySelector('#modal h2').innerText = "💪 再接再厲！";
-                                pCodeEl.innerText = "";
-                                codeBox.style.display = "none"; // 隱藏序號框
-                            }
-                    
+                            document.getElementById('pName').innerText = data.prizeName;
+                            document.getElementById('pCode').innerText = data.prizeCode;
+                            // 綁定彈窗複製按鈕事件
+                            document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
                             document.getElementById('modal').style.display = 'block';
                             initData();
                             isSpinning = false;
                         }, 700);
+                    } else {
+                        alert(data.msg || "序號已抽完！");
+                        isSpinning = false;
                     }
                 }, 1500);
             } catch (e) {
