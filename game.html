@@ -147,7 +147,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbwGrMfHDYEMO-1dbCwQEvG5v_r4jqNE1FnM1Au8A27bQc70qa3FmmJVdqx4yH5Nd4E/exec"; 
+        const gasUrl = "https://script.google.com/macros/s/AKfycbysphEdtXnLkdRs0MGWfCX1ujM6-RgWR92dcqmzuFsL_jYFgb-UMjhB0arNMkEEUnE/exec"; 
         const currentUser = sessionStorage.getItem('username');
         let isSpinning = false;
 
@@ -253,6 +253,45 @@
                     `).join("");
                 }
             } catch (e) {}
+        }
+
+        // 控制修改密碼區塊顯示/隱藏
+        function togglePasswordDiv() {
+            const div = document.getElementById('passwordDiv');
+            div.style.display = (div.style.display === 'none') ? 'block' : 'none';
+        }
+
+        // 送出修改密碼請求
+        async function submitNewPassword() {
+            const oldPass = document.getElementById('oldPass').value;
+            const newPass = document.getElementById('newPass').value;
+        
+            if (!oldPass || !newPass) {
+                alert("請填寫完整資訊");
+                return;
+            }
+        
+            if (newPass.length < 4) {
+                alert("新密碼長度建議至少 4 位數");
+                return;
+            }
+        
+            try {
+                const res = await fetch(`${gasUrl}?action=changePassword&username=${encodeURIComponent(currentUser)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`);
+                const data = await res.json();
+        
+                if (data.success) {
+                    alert("密碼已修改！下次請使用新密碼登入。");
+                    togglePasswordDiv();
+                    // 清空輸入框
+                    document.getElementById('oldPass').value = "";
+                    document.getElementById('newPass').value = "";
+                } else {
+                    alert(data.msg);
+                }
+            } catch (e) {
+                alert("系統連線失敗");
+            }
         }
 
         // 在 initData 或是 handleDraw 成功後呼叫
