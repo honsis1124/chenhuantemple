@@ -147,7 +147,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbxHT19ctqr3-6P2ep6WPmxq5Ckj27npjpTq0dyIYXPfK7maHq4wknk1xuxePEaUckk/exec"; 
+        const gasUrl = "https://script.google.com/macros/s/AKfycbwiT8DvQBfSXu0Rg1DQoR7uMDTw6NyRbg-poMf0G7-xrqUZBzSlLsoO5AjtQnA3l2s/exec"; 
         const currentUser = sessionStorage.getItem('username');
         let isSpinning = false;
 
@@ -203,18 +203,22 @@
         
             try {
                 const token = sessionStorage.getItem('loginToken');
-                const res = await fetch(`${gasUrl}?action=draw&token=${encodeURIComponent(token)}`);
+        
+                // ⭐ 修正這裡
+                const res = await fetch(`${gasUrl}?action=changePassword&token=${encodeURIComponent(token)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`);
+        
                 const data = await res.json();
         
                 if (data.success) {
                     alert("密碼已修改！下次請使用新密碼登入。");
                     togglePasswordDiv();
-                    // 清空輸入框
+        
                     document.getElementById('oldPass').value = "";
                     document.getElementById('newPass').value = "";
                 } else {
                     alert(data.msg);
                 }
+        
             } catch (e) {
                 alert("系統連線失敗");
             }
