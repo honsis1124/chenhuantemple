@@ -137,14 +137,12 @@
 
     <!-- 中獎彈窗 -->
     <div id="modal">
-        <h2 id="modalTitle">🎉 恭喜中獎！</h2>
+        <h2>🎉 恭喜中獎！</h2>
         <div id="pName" class="prize-name"></div>
-    
-        <div id="pCodeBox" class="prize-code-box">
+        <div class="prize-code-box">
             <span id="pCode"></span>
             <button class="copy-btn" id="modalCopyBtn">複製</button>
         </div>
-    
         <button class="main-btn" onclick="closeModal()">確認收下</button>
     </div>
 
@@ -203,29 +201,14 @@
                     knob.classList.remove('spin');
 
                     if (data.success) {
-                        // 根據中獎與否決定球的顏色
-                        outBall.style.background = data.isWin ? "#ffbe0b" : "#ccc"; 
+                        outBall.style.background = ["#ff4d6d", "#48cae4", "#ffbe0b"][Math.floor(Math.random()*3)];
                         outBall.classList.add('ball-animation');
 
                         setTimeout(() => {
-                            const pNameEl = document.getElementById('pName');
-                            const pCodeEl = document.getElementById('pCode');
-                            const copyBtn = document.getElementById('modalCopyBtn');
-                            const codeBox = document.getElementById('pCodeBox');
-                            const modalTitle = document.getElementById('modalTitle');
-
-                            pNameEl.innerText = data.prizeName;
-                            
-                            if (data.isWin) {
-                                modalTitle.innerText = "🎉 恭喜中獎！";
-                                pCodeEl.innerText = data.prizeCode;
-                                codeBox.style.display = "block";
-                                copyBtn.onclick = () => copyToClipboard(data.prizeCode);
-                            } else {
-                                modalTitle.innerText = "💪 再接再厲！";
-                                codeBox.style.display = "none"; 
-                            }
-
+                            document.getElementById('pName').innerText = data.prizeName;
+                            document.getElementById('pCode').innerText = data.prizeCode;
+                            // 綁定彈窗複製按鈕事件
+                            document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
                             document.getElementById('modal').style.display = 'block';
                             initData();
                             isSpinning = false;
@@ -261,20 +244,13 @@
                 const myLogs = data.history.filter(h => h.user === currentUser);
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
-                    list.innerHTML = myLogs.map(h => {
-                        if (h.prize === "銘謝惠顧") {
-                            return `<li style="color:#999;"><b>${h.prize}</b><br><small>下次好運就來了！</small></li>`;
-                        } else {
-                            return `
-                                <li>
-                                    <b>${h.prize}</b> 
-                                    <button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製</button><br>
-                                    <small style="color:#666">${h.code}</small>
-                                </li>`;
-                        }
-                    }).join("");
-                } else {
-                    list.innerHTML = "<li>尚未有紀錄</li>";
+                    list.innerHTML = myLogs.map(h => `
+                        <li>
+                            <b>${h.prize}</b> 
+                            <button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button><br>
+                            <small style="color:#666">${h.code}</small>
+                        </li>
+                    `).join("");
                 }
             } catch (e) {}
         }
