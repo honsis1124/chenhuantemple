@@ -123,6 +123,18 @@
         </div>
     </div>
 
+    <div style="margin-top: 10px;">
+        <button onclick="togglePasswordDiv()" style="background:none; border:none; color:#666; cursor:pointer; text-decoration:underline;">修改我的密碼</button>
+    </div>
+    
+    <div id="passwordDiv" style="display:none; background:white; padding:15px; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-top:10px; width:100%; max-width:400px; box-sizing: border-box;">
+        <h3>🔐 修改密碼</h3>
+        <input type="password" id="oldPass" placeholder="輸入舊密碼" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+        <input type="password" id="newPass" placeholder="輸入新密碼" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+        <button class="main-btn" onclick="submitNewPassword()">確認更新</button>
+        <button class="copy-btn" onclick="togglePasswordDiv()">取消</button>
+    </div>
+
     <!-- 中獎彈窗 -->
     <div id="modal">
         <h2>🎉 恭喜中獎！</h2>
@@ -166,6 +178,45 @@
                 document.body.removeChild(el);
                 alert("序號已複製成功！");
             });
+        }
+
+        // 控制修改密碼區塊顯示/隱藏
+        function togglePasswordDiv() {
+            const div = document.getElementById('passwordDiv');
+            div.style.display = (div.style.display === 'none') ? 'block' : 'none';
+        }
+        
+        // 送出修改密碼請求
+        async function submitNewPassword() {
+            const oldPass = document.getElementById('oldPass').value;
+            const newPass = document.getElementById('newPass').value;
+        
+            if (!oldPass || !newPass) {
+                alert("請填寫完整資訊");
+                return;
+            }
+        
+            if (newPass.length < 4) {
+                alert("新密碼長度建議至少 4 位數");
+                return;
+            }
+        
+            try {
+                const res = await fetch(`${gasUrl}?action=changePassword&username=${encodeURIComponent(currentUser)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`);
+                const data = await res.json();
+        
+                if (data.success) {
+                    alert("密碼已修改！下次請使用新密碼登入。");
+                    togglePasswordDiv();
+                    // 清空輸入框
+                    document.getElementById('oldPass').value = "";
+                    document.getElementById('newPass').value = "";
+                } else {
+                    alert(data.msg);
+                }
+            } catch (e) {
+                alert("系統連線失敗");
+            }
         }
 
         async function handleDraw() {
