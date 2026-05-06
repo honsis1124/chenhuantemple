@@ -137,12 +137,14 @@
 
     <!-- 中獎彈窗 -->
     <div id="modal">
-        <h2>🎉 恭喜中獎！</h2>
+        <h2 id="modalTitle">🎉 恭喜中獎！</h2>
         <div id="pName" class="prize-name"></div>
-        <div class="prize-code-box">
+    
+        <div id="pCodeBox" class="prize-code-box">
             <span id="pCode"></span>
             <button class="copy-btn" id="modalCopyBtn">複製</button>
         </div>
+    
         <button class="main-btn" onclick="closeModal()">確認收下</button>
     </div>
 
