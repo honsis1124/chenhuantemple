@@ -204,17 +204,16 @@
             try {
                 const token = sessionStorage.getItem('loginToken');
         
-                // ⭐ 修正這裡
                 const res = await fetch(`${gasUrl}?action=changePassword&token=${encodeURIComponent(token)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`);
-        
                 const data = await res.json();
         
                 if (data.success) {
-                    alert("密碼已修改！下次請使用新密碼登入。");
-                    togglePasswordDiv();
+                    alert("密碼已修改！請重新登入");
         
-                    document.getElementById('oldPass').value = "";
-                    document.getElementById('newPass').value = "";
+                    // ⭐ 放在這裡
+                    sessionStorage.clear();
+                    window.location.href = "index.html";
+        
                 } else {
                     alert(data.msg);
                 }
