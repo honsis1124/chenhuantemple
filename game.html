@@ -233,7 +233,8 @@
             outBall.classList.remove('ball-animation');
 
             try {
-                const res = await fetch(`${gasUrl}?action=draw&username=${encodeURIComponent(currentUser)}`);
+                const token = sessionStorage.getItem('loginToken');
+                const res = await fetch(`${gasUrl}?action=draw&token=${encodeURIComponent(token)}`);
                 const data = await res.json();
 
                 setTimeout(() => {
