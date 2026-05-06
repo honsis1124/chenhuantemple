@@ -147,7 +147,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycby4GOqnC3Ax_9hzro5D_9Deq6Oy4mgW5sTKHkwIT4OFNWVaFjvlo1_EwHIm6lKr4k8/exec"; 
+        const gasUrl = "https://script.google.com/macros/s/AKfycbwVZC0ejpPi6IdNgjr9fzujAl1aMc_LEu7ZaWDfGb_eBK4ziW9vWkL_MnnEFc2gzA/exec"; 
         const currentUser = sessionStorage.getItem('username');
         let isSpinning = false;
 
@@ -202,7 +202,8 @@
             }
         
             try {
-                const res = await fetch(`${gasUrl}?action=changePassword&username=${encodeURIComponent(currentUser)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`);
+                const token = sessionStorage.getItem('loginToken');
+                const res = await fetch(`${gasUrl}?action=draw&token=${encodeURIComponent(token)}`);
                 const data = await res.json();
         
                 if (data.success) {
