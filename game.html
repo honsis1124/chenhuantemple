@@ -194,19 +194,8 @@
                     
                         setTimeout(() => {
                             document.getElementById('pName').innerText = data.prizeName;
-                    
-                            // ⭐ 核心：判斷是否中獎
-                            if (data.isWin) {
-                                // 中獎
-                                document.getElementById('pCode').innerText = data.prizeCode;
-                                document.getElementById('modalCopyBtn').style.display = 'inline-block';
-                                document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
-                            } else {
-                                // ❌ 銘謝惠顧
-                                document.getElementById('pCode').innerText = "再接再厲！";
-                                document.getElementById('modalCopyBtn').style.display = 'none';
-                            }
-                    
+                            document.getElementById('pCode').innerText = data.prizeCode;
+                            document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
                             document.getElementById('modal').style.display = 'block';
                             initData();
                             isSpinning = false;
