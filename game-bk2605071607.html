@@ -156,7 +156,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbyfgbXg97FUZd-0ig9dgmSfSyjnweEzOIKJMSPlz0VsjOuR6RE7WAna4_jTRJV-K2o/exec"; 
+        const gasUrl = "https://script.google.com/macros/s/AKfycbytYoaERnyIdUrdXnjNJ1lyBAglEhagwYJw-W54OQsScCK3xUd1Eux8g-KMXGmFg3Ye/exec"; 
         const currentUser = sessionStorage.getItem('username');
         let isSpinning = false;
 
@@ -313,24 +313,18 @@
             }
         }
 
-        async function updateGlobalHistory() {
-            try {
-                const res = await fetch(`${gasUrl}?action=getLogs`);
-                const data = await res.json();
+        async function updateMarquee() {
+            const res = await fetch(gasUrl + "?action=getLogs");
+            const data = await res.json();
+            
+            if (data.history) {
+                const text = data.history.map(h => {
+                    // 保險：如果後端沒給 nickname，就顯示為「幸運兒」
+                    let name = h.nickname || "幸運兒";
+                    return `🎉 恭喜 [${name}] 獲得了 ${h.prize}`;
+                }).join("　　");
                 
-                if (!data.history || !Array.isArray(data.history)) return;
-        
-                const text = data.history.length > 0
-                    ? data.history.map(h => {
-                        // 如果 nickname 還是 undefined 或 "undefined"，就用 username
-                        let displayName = (h.nickname && h.nickname !== "undefined") ? h.nickname : h.username;
-                        return `恭喜 [${displayName}] 抽中 ${h.prize}`;
-                      }).join("  🌟  ")
-                    : "快來抽獎吧！";
-                    
-                document.getElementById('globalHistory').textContent = text;
-            } catch (e) {
-                console.error("跑馬燈載入失敗:", e);
+                document.getElementById('marquee').innerText = text || "目前尚無獲獎紀錄";
             }
         }
 
