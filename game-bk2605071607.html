@@ -315,29 +315,37 @@
 
         async function updateGlobalHistory() {
             try {
-                const res = await fetch(`${gasUrl}?action=getLogs`);
+                // 加上 cache buster 防止瀏覽器快取舊資料
+                const res = await fetch(`${gasUrl}?action=getLogs&t=${new Date().getTime()}`);
                 const data = await res.json();
                 const text = data.history.length > 0 
                     ? data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join("  🌟  ")
                     : "快來抽獎吧！";
                 document.getElementById('globalHistory').innerText = text;
-            } catch (e) {}
+            } catch (e) {
+                console.error("更新跑馬燈失敗", e);
+            }
         }
 
         async function updateMyHistory() {
             try {
-                const res = await fetch(`${gasUrl}?action=getLogs`);
+                const res = await fetch(`${gasUrl}?action=getLogs&t=${new Date().getTime()}`);
                 const data = await res.json();
+                
+                // 這裡改用 session 裡的 nickname 比對
                 const currentNickname = sessionStorage.getItem('nickname');
+                
+                // 過濾出屬於自己的紀錄 (比對暱稱)
                 const myLogs = data.history.filter(h => h.user === currentNickname);
+                
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
                     list.innerHTML = myLogs.map(h => `
                         <li>
                             <b>${h.prize}</b> 
                             ${
-                                h.code !== "NONE"
-                                ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>`
+                                h.code !== "NONE" 
+                                ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>` 
                                 : ""
                             }
                             <br>
@@ -346,8 +354,12 @@
                             </small>
                         </li>
                     `).join("");
+                } else {
+                    list.innerHTML = "<li>尚未有紀錄</li>";
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("更新個人紀錄失敗", e);
+            }
         }
 
         // 在 initData 或是 handleDraw 成功後呼叫
