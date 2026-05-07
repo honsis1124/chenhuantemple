@@ -19,40 +19,67 @@
         ul { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; }
         li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
 
+        /* 獲獎紀錄列表容器 */
         .history-item {
             display: flex;
+            align-items: center; /* 垂直居中 */
             justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
+            padding: 15px 0;
             border-bottom: 1px solid #eee;
+            gap: 10px;
         }
-        .prize-info {
+        
+        /* 左側：中獎時間 */
+        .item-time {
+            font-size: 12px;
+            color: #888;
+            min-width: 65px; /* 確保時間寬度固定 */
+            text-align: left;
+            line-height: 1.2;
+        }
+        
+        /* 中間：兩行資訊 (名稱+序號) */
+        .item-content {
+            flex-grow: 1; /* 自動填滿中間空間 */
             display: flex;
             flex-direction: column;
             gap: 4px;
+            overflow: hidden;
         }
+        
         .prize-name {
             font-weight: bold;
-            color: var(--dark);
+            color: var(--dark-blue);
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
+        
         .prize-code {
             font-size: 13px;
-            color: #666;
-            background: #f0f0f0;
-            padding: 2px 6px;
-            border-radius: 4px;
+            color: #ef233c; /* 序號用紅色突出 */
             font-family: monospace;
         }
+        
+        /* 右側：按鈕 */
+        .item-action {
+            min-width: 80px;
+            text-align: right;
+        }
+        
         .copy-btn {
-            padding: 5px 10px;
-            background: #2b2d42;
+            padding: 6px 12px;
+            background: var(--dark-blue);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             font-size: 12px;
             cursor: pointer;
+            transition: background 0.2s;
         }
-        .copy-btn:active {
+        
+        .copy-btn:hover {
             background: #ef233c;
         }
         
@@ -99,7 +126,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbxFTTzGFLawjNkoylSRwnLKbFKJvIkHPdoUpE014oZlw1QNxuO-dV1Rzbd8iJlI_dhI/exec";
+        const gasUrl = "https://script.google.com/macros/s/AKfycbxbL7cfCdpD33qnKI1mxxNOAEIELQNzB-Ki82zEoufoGlbxHgLPOm4tcnS3aSQ8lpG0/exec";
         const token = sessionStorage.getItem('token');
         const username = sessionStorage.getItem('username');
         const nickname = sessionStorage.getItem('nickname');
@@ -145,28 +172,37 @@
                 const data = await res.json();
                 const list = document.getElementById('myList');
                 
-                // 過濾出自己的紀錄
+                // 過濾自己的紀錄
                 const myLogs = data.history.filter(h => h.username === username || h.nickname === nickname);
                 
                 if (myLogs.length > 0) {
                     list.innerHTML = myLogs.map(h => {
-                        // 如果沒有序號或是 NONE，就不顯示複製按鈕
-                        const hasCode = h.code && h.code !== "NONE";
+                        // 1. 格式化時間 (假設後端有傳回 timestamp，若無則依序號生成位置)
+                        // 這裡我們暫時用當前時間示範，若 GAS 有傳 time 欄位請替換
+                        const logDate = h.timestamp ? new Date(h.timestamp) : new Date();
+                        const timeStr = `${logDate.getMonth()+1}/${logDate.getDate()}<br>${logDate.getHours()}:${String(logDate.getMinutes()).padStart(2, '0')}`;
+        
+                        const hasCode = h.code && String(h.code).trim() !== "" && h.code !== "NONE";
+                        const displayCode = hasCode ? h.code : "無序號";
+        
                         return `
                             <li class="history-item">
-                                <div class="prize-info">
-                                    <span class="prize-name">${h.prize}</span>
-                                    <span class="prize-code">${hasCode ? h.code : '無序號'}</span>
+                                <div class="item-time">${timeStr}</div>
+                                <div class="item-content">
+                                    <span class="prize-name">${h.prize || '未知名稱'}</span>
+                                    <span class="prize-code">${displayCode}</span>
                                 </div>
-                                ${hasCode ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>` : ''}
+                                <div class="item-action">
+                                    ${hasCode ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>` : ''}
+                                </div>
                             </li>
                         `;
                     }).join("");
                 } else {
-                    list.innerHTML = "<li>尚未有紀錄</li>";
+                    list.innerHTML = "<li style='text-align:center; padding:20px; color:#999;'>目前尚無獲獎紀錄</li>";
                 }
             } catch (e) {
-                console.error("讀取紀錄失敗", e);
+                console.error("更新紀錄失敗", e);
             }
         }
         
