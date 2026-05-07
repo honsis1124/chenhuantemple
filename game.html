@@ -49,23 +49,20 @@
             background: rgba(255, 255, 255, 0.6); 
             border: 6px solid #444; border-radius: 50%; 
             position: absolute; top: 0; left: 40px; 
-            display: flex; 
-            flex-wrap: wrap;       /* 讓球多到塞不下時會自動換行 */
-            justify-content: center; 
-            align-content: center; 
+            /* 移除原本的 flex 設定 */
+            display: block; 
             overflow: hidden; 
-            z-index: 2; 
-            padding: 5px;          /* 增加一點內邊距讓球不貼邊 */
+            z-index: 2;
         }
         
         /* 新增球的共同樣式 */
         .ball {
-            width: 25px;           /* 稍微縮小一點點，20顆才塞得漂亮 */
-            height: 25px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            margin: 2px;
-            border: 2px solid rgba(0,0,0,0.1); /* 淡淡的邊框增加立體感 */
-            box-shadow: inset -3px -3px 6px rgba(0,0,0,0.2); /* 內陰影讓球變圓潤 */
+            position: absolute; /* 改為絕對定位 */
+            border: 2px solid rgba(0,0,0,0.15);
+            box-shadow: inset -4px -4px 6px rgba(0,0,0,0.2); /* 內陰影讓球變圓潤 */
         }
 
         .machine-bottom { 
@@ -195,18 +192,31 @@
 
         function fillBalls() {
             const container = document.getElementById('ballContainer');
-            // 定義你喜歡的扭蛋顏色清單
-            const colors = ["#ff4d6d", "#48cae4", "#ffbe0b", "#72efdd", "#9d4edd", "#fb8500", "#52b788"];
+            const colors = ["#ff4d6d", "#48cae4", "#ffbe0b", "#72efdd", "#9d4edd", "#fb8500", "#f07167"];
             
-            container.innerHTML = ''; // 先清空容器
+            container.innerHTML = ''; 
             
-            for (let i = 0; i < 20; i++) {
+            // 生成 20-25 顆球，數量多一點比較有堆疊感
+            const ballCount = 22; 
+        
+            for (let i = 0; i < ballCount; i++) {
                 const ball = document.createElement('div');
                 ball.className = 'ball';
-                // 隨機從清單中挑選顏色
                 ball.style.background = colors[Math.floor(Math.random() * colors.length)];
-                // 隨機旋轉角度，讓內陰影方向略微不同，看起來更隨機
+        
+                // --- 隨機座標邏輯 ---
+                // 容器寬高 180px，減去球體寬度 28px，安全範圍約在 150px 內
+                // 我們稍微向圓心靠攏，避免球體被圓形邊框切掉太多
+                const randomX = Math.floor(Math.random() * 140) + 10; 
+                const randomY = Math.floor(Math.random() * 140) + 15; 
+        
+                ball.style.left = `${randomX}px`;
+                ball.style.top = `${randomY}px`;
+                
+                // 隨機旋轉與稍微不同的 Z-index 增加重疊感
                 ball.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+                ball.style.zIndex = Math.floor(Math.random() * 10);
+        
                 container.appendChild(ball);
             }
         }
