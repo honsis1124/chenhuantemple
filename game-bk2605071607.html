@@ -324,7 +324,7 @@
                         `恭喜 [${h.nickname || h.username}] 抽中 ${h.prize}`
                       ).join("  🌟  ")
                     : "快來抽獎吧！";        
-                document.getElementById('globalHistory').innerText = text;
+                document.getElementById('globalHistory').textContent = text;
         
             } catch (e) {        
                 console.error(e);        
