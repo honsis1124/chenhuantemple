@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>晨皇廟咖啡扭蛋機</title>
+    <style>
+        :root {
+            --primary-red: #ef233c;
+            --dark-blue: #2b2d42;
+            --gold: #ffbe0b;
+        }
+
+        body { 
+            font-family: 'Microsoft JhengHei', sans-serif; 
+            background: #fdf0d5; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        
+        .marquee-container { 
+            width: 100%; 
+            max-width: 400px; 
+            background: var(--dark-blue); 
+            color: var(--gold); 
+            padding: 10px; 
+            border-radius: 25px; 
+            margin-bottom: 30px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .machine-container { width: 100%; display: flex; justify-content: center; position: relative; margin-bottom: 50px; }
+        .gacha-machine { width: 260px; height: 360px; position: relative; }
+
+        @keyframes shakeAnim {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            50% { transform: rotate(-2deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .shake { animation: shakeAnim 0.2s infinite; }
+
+        .machine-top { 
+            width: 180px; height: 180px; 
+            background: rgba(255, 255, 255, 0.6); 
+            border: 6px solid #444; border-radius: 50%; 
+            position: absolute; top: 0; left: 40px; 
+            /* 移除原本的 flex 設定 */
+            display: block; 
+            overflow: hidden; 
+            z-index: 2;
+        }
+        
+        /* 新增球的共同樣式 */
+        .ball {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            position: absolute; /* 改為絕對定位 */
+            border: 2px solid rgba(0,0,0,0.15);
+            box-shadow: inset -4px -4px 6px rgba(0,0,0,0.2); /* 內陰影讓球變圓潤 */
+        }
+
+        .machine-bottom { 
+            width: 200px; height: 160px; 
+            background: var(--primary-red); 
+            border: 6px solid #444; border-radius: 20px; 
+            position: absolute; bottom: 10px; left: 30px; z-index: 1; 
+        }
+
+        .knob { 
+            width: 50px; height: 50px; background: #fff; border: 4px solid #444; border-radius: 50%; 
+            position: absolute; top: 30px; left: 75px; cursor: pointer; z-index: 3; 
+        }
+        .knob::after { content: ""; width: 30px; height: 6px; background: #444; position: absolute; top: 22px; left: 10px; border-radius: 3px; }
+        .spin { transform: rotate(360deg) !important; transition: transform 0.5s; }
+
+        .exit { width: 60px; height: 35px; background: #333; border-radius: 10px 10px 0 0; position: absolute; bottom: 0; left: 70px; }
+        .out-ball { width: 45px; height: 45px; border-radius: 50%; border: 3px solid #333; position: absolute; bottom: 0; left: 77px; display: none; z-index: 5; }
+
+        @keyframes ballDrop {
+            0% { transform: translateY(0); opacity: 1; }
+            40% { transform: translateY(60px) scaleY(0.8); }
+            100% { transform: translateY(55px); opacity: 1; }
+        }
+        .ball-animation { display: block !important; animation: ballDrop 0.6s ease-out forwards; }
+
+        /* 彈窗與按鈕樣式 */
+        #modal { 
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); 
+            text-align: center; z-index: 10; width: 280px; border: 4px solid var(--primary-red); 
+        }
+        .prize-name { font-size: 20px; font-weight: bold; color: var(--primary-red); margin: 10px; }
+        .prize-code-box { background: #f0f0f0; padding: 12px; border-radius: 8px; font-family: monospace; margin-bottom: 15px; position: relative; word-break: break-all; }
+        
+        .copy-btn { background: #444; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; margin-left: 5px; }
+        .copy-btn:hover { background: #000; }
+        .main-btn { background: var(--primary-red); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+
+        .history-list { width: 100%; max-width: 400px; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 20px; }
+        ul { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; text-align: left; }
+        li { padding: 10px 0; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+    <div class="marquee-container">
+        <marquee id="globalHistory">正在載入最新動態...</marquee>
+    </div>
+
+    <div id="gameContainer" style="display:none; width: 100%; max-width: 400px;">
+        <div class="machine-container">
+            <div class="gacha-machine" id="machine">
+                <div class="machine-top" id="ballContainer">
+                </div>
+                <div class="machine-bottom">
+                    <div class="knob" id="knob" onclick="handleDraw()"></div>
+                    <div class="exit"></div>
+                    <div id="outBall" class="out-ball"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-list">
+            <h3>🎁 我的中獎紀錄</h3>
+            <ul id="myHistory"><li>尚未有紀錄</li></ul>
+        </div>
+    </div>
+
+    <div style="margin-top: 10px;">
+        <button onclick="togglePasswordDiv()" style="background:none; border:none; color:#666; cursor:pointer; text-decoration:underline;">修改我的密碼</button>
+    </div>
+    
+    <div id="passwordDiv" style="display:none; background:white; padding:15px; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1); margin-top:10px; width:100%; max-width:400px; box-sizing: border-box;">
+        <h3>🔐 修改密碼</h3>
+        <input type="password" id="oldPass" placeholder="輸入舊密碼" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+        <input type="password" id="newPass" placeholder="輸入新密碼" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px;">
+        <button class="main-btn" onclick="submitNewPassword()">確認更新</button>
+        <button class="copy-btn" onclick="togglePasswordDiv()">取消</button>
+    </div>
+
+    <!-- 中獎彈窗 -->
+    <div id="modal">
+        <h2>🎉 恭喜中獎！</h2>
+        <div id="pName" class="prize-name"></div>
+        <div class="prize-code-box">
+            <span id="pCode"></span>
+            <button class="copy-btn" id="modalCopyBtn">複製</button>
+        </div>
+        <button class="main-btn" onclick="closeModal()">確認收下</button>
+    </div>
+
+    <script>
+        const gasUrl = "https://script.google.com/macros/s/AKfycby02t9bZW0UwrmEvoz7oN84WnQNfuv0f-1vi7-K76XhV_w2sphBW2H1EtHkAQsqsX8/exec"; 
+        const currentUser = sessionStorage.getItem('username');
+        let isSpinning = false;
+
+        if (!sessionStorage.getItem('loginToken') || !currentUser) {
+            alert("請先登入！");
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('gameContainer').style.display = 'block';
+            initData();
+        }
+
+        async function initData() {
+            fillBalls(); // 執行動態產生球
+            updateGlobalHistory();
+            updateMyHistory();
+        }
+
+        // 複製功能函式
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("序號已複製成功！");
+            }).catch(() => {
+                // 備用方案
+                const el = document.createElement('textarea');
+                el.value = text;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                alert("序號已複製成功！");
+            });
+        }
+
+        function fillBalls() {
+            const container = document.getElementById('ballContainer');
+            const colors = ["#ff4d6d", "#48cae4", "#ffbe0b", "#72efdd", "#9d4edd", "#fb8500", "#f07167"];
+            
+            container.innerHTML = ''; 
+            
+            // 生成 20-25 顆球，數量多一點比較有堆疊感
+            const ballCount = 40; 
+        
+            for (let i = 0; i < ballCount; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+                // --- 隨機座標邏輯 ---
+                // 容器寬高 180px，減去球體寬度 28px，安全範圍約在 150px 內
+                // 我們稍微向圓心靠攏，避免球體被圓形邊框切掉太多
+                const randomX = Math.floor(Math.random() * 140) + 10; 
+                const randomY = Math.floor(Math.random() * 130) + 15; 
+        
+                ball.style.left = `${randomX}px`;
+                ball.style.top = `${randomY}px`;
+                
+                // 隨機旋轉與稍微不同的 Z-index 增加重疊感
+                ball.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+                ball.style.zIndex = Math.floor(Math.random() * 10);
+        
+                container.appendChild(ball);
+            }
+        }
+
+        // 控制修改密碼區塊顯示/隱藏
+        function togglePasswordDiv() {
+            const div = document.getElementById('passwordDiv');
+            div.style.display = (div.style.display === 'none') ? 'block' : 'none';
+        }
+        
+        // 送出修改密碼請求
+        async function submitNewPassword() {
+            const oldPass = document.getElementById('oldPass').value;
+            const newPass = document.getElementById('newPass').value;
+        
+            if (!oldPass || !newPass) {
+                alert("請填寫完整資訊");
+                return;
+            }
+        
+            if (newPass.length < 4) {
+                alert("新密碼長度建議至少 4 位數");
+                return;
+            }
+        
+            try {
+                const token = sessionStorage.getItem('loginToken');
+        
+                const res = await fetch(`${gasUrl}?action=changePassword&token=${encodeURIComponent(token)}&oldPassword=${encodeURIComponent(oldPass)}&newPassword=${encodeURIComponent(newPass)}`);
+                const data = await res.json();
+        
+                if (data.success) {
+                    alert("密碼已修改！請重新登入");
+        
+                    // ⭐ 放在這裡
+                    sessionStorage.clear();
+                    window.location.href = "index.html";
+        
+                } else {
+                    alert(data.msg);
+                }
+        
+            } catch (e) {
+                alert("系統連線失敗");
+            }
+        }
+
+        async function handleDraw() {
+            if (isSpinning) return;
+            isSpinning = true;
+
+            fillBalls(); // 抽獎時重新隨機排列球的顏色或位置，模擬攪拌效果
+
+            const knob = document.getElementById('knob');
+            const machine = document.getElementById('machine');
+            const outBall = document.getElementById('outBall');
+            
+            knob.classList.add('spin');
+            machine.classList.add('shake');
+            outBall.classList.remove('ball-animation');
+
+            try {
+                const token = sessionStorage.getItem('loginToken');
+                const res = await fetch(`${gasUrl}?action=draw&token=${encodeURIComponent(token)}`);
+                const data = await res.json();
+
+                setTimeout(() => {
+                    machine.classList.remove('shake');
+                    knob.classList.remove('spin');
+
+                    if (data.success) {
+                        outBall.style.background = ["#ff4d6d", "#48cae4", "#ffbe0b"][Math.floor(Math.random()*3)];
+                        outBall.classList.add('ball-animation');
+                    
+                        setTimeout(() => {
+                            document.getElementById('pName').innerText = data.prizeName;
+                            document.getElementById('pCode').innerText = data.prizeCode;
+                            document.getElementById('modalCopyBtn').onclick = () => copyToClipboard(data.prizeCode);
+                            document.getElementById('modal').style.display = 'block';
+                            alert(`今日剩餘抽獎次數：${data.remaining}`);
+                            initData();
+                            isSpinning = false;
+                        }, 700);
+                    } else {
+                        alert(data.msg || "序號已抽完！");
+                        isSpinning = false;
+                    }
+                }, 1500);
+            } catch (e) {
+                alert("連線失敗");
+                machine.classList.remove('shake');
+                knob.classList.remove('spin');
+                isSpinning = false;
+            }
+        }
+
+        async function updateGlobalHistory() {
+            try {
+                const res = await fetch(`${gasUrl}?action=getLogs`);
+                const data = await res.json();
+                const text = data.history.length > 0 
+                    ? data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join("  🌟  ")
+                    : "快來抽獎吧！";
+                document.getElementById('globalHistory').innerText = text;
+            } catch (e) {}
+        }
+
+        async function updateMyHistory() {
+            try {
+                const res = await fetch(`${gasUrl}?action=getLogs`);
+                const data = await res.json();
+                const myLogs = data.history.filter(h => h.user === currentUser);
+                const list = document.getElementById('myHistory');
+                if (myLogs.length > 0) {
+                    list.innerHTML = myLogs.map(h => `
+                        <li>
+                            <b>${h.prize}</b> 
+                            ${
+                                h.code !== "NONE"
+                                ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>`
+                                : ""
+                            }
+                            <br>
+                            <small style="color:#666">
+                                ${h.code !== "NONE" ? h.code : "未中獎"}
+                            </small>
+                        </li>
+                    `).join("");
+                }
+            } catch (e) {}
+        }
+
+        // 在 initData 或是 handleDraw 成功後呼叫
+        async function updateRemainingCount() {
+            // 你可以新增一個 action=getCount 來專門抓次數，或者在 draw 的結果中回傳
+            // 這裡示範簡單的提示邏輯
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('outBall').style.display = 'none';
+        }
+
+        setInterval(updateGlobalHistory, 60000);
+    </script>
+</body>
+</html>
