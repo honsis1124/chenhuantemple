@@ -9,164 +9,64 @@
         body { font-family: 'Microsoft JhengHei', sans-serif; background: #fdf0d5; margin: 0; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
         .marquee-box { width: 100%; max-width: 400px; background: var(--dark); color: var(--gold); padding: 10px; border-radius: 50px; margin-bottom: 20px; text-align: center; overflow: hidden; white-space: nowrap; }
-        
-        /* ========================================= */
-        /* 全新精靈球 Pokeball 風格扭蛋機 CSS         */
-        /* ========================================= */
-        
-        :root {
-            --pokeball-red: #ef233c;    /* 精靈球紅色 */
-            --pokeball-white: #ffffff;  /* 精靈球白色 */
-            --pokeball-belt: #333333;   /* 腰帶黑色 */
-            --prizeball-yellow: #ffbe0b;/* 扭蛋球黃色 */
-            --prizeball-blue: #3a86ff;  /* 扭蛋球藍色 */
-            --prizeball-green: #06d6a0; /* 扭蛋球綠色 */
+
+        /* 扭蛋機 */
+        .machine-container { width: 100%; display: flex; justify-content: center; position: relative; margin-bottom: 50px; }
+        .gacha-machine { width: 260px; height: 360px; position: relative; }
+
+        @keyframes shakeAnim {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            50% { transform: rotate(-2deg); }
+            100% { transform: rotate(0deg); }
         }
-        
-        /* 扭蛋機整體容器 */
-        .pokegacha-container {
-            position: relative;
-            width: 260px;
-            height: 420px;
-            margin: 30px auto;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-        
-        /* 點擊時的微小震動效果，模擬 Pokeball 捉到精靈 */
-        .pokegacha-container:active {
-            transform: scale(0.98);
-        }
-        
-        /* 上半部：玻璃圓頂 */
-        .pokegacha-top {
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 8px solid var(--pokeball-belt);
-            border-radius: 50%;
-            position: absolute;
-            top: 15px;                 /* 稍微下移，使其嵌入機身更自然 */
-            left: 30px;
-            z-index: 3;
-            box-shadow: inset -10px 10px 20px rgba(255,255,255,0.4);
-            overflow: hidden;
-        }
-        
-        /* 玻璃反光 */
-        .glass-shine {
-            content: "";
-            position: absolute;
-            top: 20px;
-            left: 35px;
-            width: 45px;
-            height: 90px;
-            background: rgba(255,255,255,0.3);
-            border-radius: 50%;
-            transform: rotate(25deg);
-            z-index: 10;
-        }
-        
-        /* 中間：腰帶線與旋轉鈕 */
-        .pokegacha-belt {
-            width: 240px;               /* 從 260px 縮小到 240px，與機身寬度一致 */
-            height: 16px;
-            background-color: var(--pokeball-belt);
-            position: absolute;
-            top: 210px;                 /* 從 192px 下移到 210px */
-            left: 10px;                 /* 配合機身 left: 10px 的位置 */
-            z-index: 5;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-        
-        /* 精靈球核心旋轉鈕 */
-        .pokegacha-center-knob {
-            width: 60px;
-            height: 60px;
-            background-color: var(--pokeball-white);
-            border: 10px solid var(--pokeball-belt);
-            border-radius: 50%;
-            position: absolute;
-            top: -32px;                 /* 維持相對於腰帶的高度 */
-            left: 80px;                 /* 修正水平置中：(240機身寬 - 60鈕寬 - 20邊框)/2 = 80 */
-            z-index: 6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            transition: transform 0.6s cubic-bezier(0.45, 0.05, 0.55, 0.95);
-        }
-        
-        /* 旋轉鈕內圈細節 */
-        .knob-inner {
-            width: 25px;
-            height: 25px;
-            background-color: var(--pokeball-white);
-            border: 4px solid var(--pokeball-belt);
-            border-radius: 50%;
-        }
-        
-        /* 下半部：機身基座 (紅色 part) */
-        .pokegacha-body {
-            width: 240px;
-            height: 240px;
-            position: absolute;
-            bottom: 0;
-            left: 10px;
+        .shake { animation: shakeAnim 0.2s infinite; }
+
+        .machine-top { 
+            width: 180px; height: 180px; 
+            background: rgba(255, 255, 255, 0.6); 
+            border: 6px solid #444; border-radius: 50%; 
+            position: absolute; top: 0; left: 40px; 
+            /* 移除原本的 flex 設定 */
+            display: block; 
+            overflow: hidden; 
             z-index: 2;
-            border-radius: 20px 20px 60px 60px;
-            border: 8px solid var(--pokeball-belt);
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
         
-        .body-red-part {
-            width: 100%;
-            height: 50%;
-            background-color: var(--pokeball-red);
-            box-shadow: inset -15px 0 0 rgba(0,0,0,0.1);
-        }
-        
-        /* 下半部：機身基座 (白色 part) */
-        .body-white-part {
-            width: 100%;
-            height: 50%;
-            background-color: var(--pokeball-white);
-            box-shadow: inset -15px 0 0 rgba(0,0,0,0.05);
-            position: relative;
-        }
-        
-        /* 取物口 */
-        .pokeslot-exit {
-            width: 80px;
-            height: 55px;
-            background-color: var(--pokeball-belt);
-            border-radius: 10px 10px 5px 5px;
-            position: absolute;
-            bottom: 25px;
-            left: 80px;
-            border: 4px solid rgba(255,255,255,0.2);
-        }
-        
-        /* 旋轉動畫類別 */
-        .knob-spin {
-            transform: rotate(1080deg) scale(1.1); /* 轉三圈並微放大 */
-        }
-        
-        /* 裝飾小扭蛋球樣式 */
+        /* 新增球的共同樣式 */
         .ball {
-            width: 45px;
-            height: 45px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            position: absolute;
-            border: 2px solid rgba(0,0,0,0.1);
-            box-shadow: inset -4px -4px 6px rgba(0,0,0,0.2); /* 內陰影增添球體感 */
+            position: absolute; /* 改為絕對定位 */
+            border: 2px solid rgba(0,0,0,0.15);
+            box-shadow: inset -4px -4px 6px rgba(0,0,0,0.2); /* 內陰影讓球變圓潤 */
         }
-        .b1 { background-color: var(--prizeball-yellow); top: 120px; left: 40px; }
-        .b2 { background-color: var(--prizeball-blue); top: 140px; left: 90px; }
-        .b3 { background-color: var(--pokeball-red); top: 100px; left: 125px; } /* 紅色小球 */
-        .b4 { background-color: var(--pokeball-belt); top: 130px; left: 145px; } /* 黑色小球 */
-        .b5 { background-color: var(--prizeball-green); top: 80px; left: 75px; }
+
+        .machine-bottom { 
+            width: 200px; height: 160px; 
+            background: var(--primary-red); 
+            border: 6px solid #444; border-radius: 20px; 
+            position: absolute; bottom: 10px; left: 30px; z-index: 1; 
+        }
+
+        .knob { 
+            width: 50px; height: 50px; background: #fff; border: 4px solid #444; border-radius: 50%; 
+            position: absolute; top: 30px; left: 75px; cursor: pointer; z-index: 3; 
+        }
+        .knob::after { content: ""; width: 30px; height: 6px; background: #444; position: absolute; top: 22px; left: 10px; border-radius: 3px; }
+        .spin { transform: rotate(360deg) !important; transition: transform 0.5s; }
+
+        .exit { width: 60px; height: 35px; background: #333; border-radius: 10px 10px 0 0; position: absolute; bottom: 0; left: 70px; }
+        .out-ball { width: 45px; height: 45px; border-radius: 50%; border: 3px solid #333; position: absolute; bottom: 0; left: 77px; display: none; z-index: 5; }
+
+        @keyframes ballDrop {
+            0% { transform: translateY(0); opacity: 1; }
+            40% { transform: translateY(60px) scaleY(0.8); }
+            100% { transform: translateY(55px); opacity: 1; }
+        }
+        .ball-animation { display: block !important; animation: ballDrop 0.6s ease-out forwards; }
+        /* ===================== */
 
         .history-section { width: 100%; max-width: 400px; background: white; margin-top: 30px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h3 { border-left: 5px solid var(--primary); padding-left: 10px; margin-top: 0; }
@@ -258,26 +158,16 @@
 
     <h2 id="welcomeMsg">您好</h2>
 
-    <div class="pokegacha-container" onclick="handleDrawClick()">    
-        <div class="pokegacha-top">
-            <div class="glass-shine"></div>
-            <div class="ball b1"></div>
-            <div class="ball b2"></div>
-            <div class="ball b3"></div>
-            <div class="ball b4"></div>
-            <div class="ball b5"></div>
-        </div>
-    
-        <div class="pokegacha-belt">
-            <div class="pokegacha-center-knob" id="knob">
-                <div class="knob-inner"></div>
-            </div>
-        </div>
-    
-        <div class="pokegacha-body">
-            <div class="body-red-part"></div>
-            <div class="body-white-part">
-                <div class="pokeslot-exit"></div>
+    <div id="gameContainer" style="display:none; width: 100%; max-width: 400px;">
+        <div class="machine-container">
+            <div class="gacha-machine" id="machine">
+                <div class="machine-top" id="ballContainer">
+                </div>
+                <div class="machine-bottom">
+                    <div class="knob" id="knob" onclick="handleDraw()"></div>
+                    <div class="exit"></div>
+                    <div id="outBall" class="out-ball"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -391,22 +281,35 @@
             }
         }
 
-        async function handleDrawClick() {
-            const knob = document.getElementById('knob');
+        function fillBalls() {
+            const container = document.getElementById('ballContainer');
+            const colors = ["#ff4d6d", "#48cae4", "#ffbe0b", "#72efdd", "#9d4edd", "#fb8500", "#f07167"];
             
-            // 1. 防止重複點擊
-            if (knob.classList.contains('knob-spin')) return;
-        
-            // 2. 核心旋轉鈕動畫
-            knob.classList.add('knob-spin');
+            container.innerHTML = ''; 
             
-            // 3. 呼叫您原本寫好的 handleDraw 抽獎邏輯
-            await handleDraw(); 
+            // 生成 20-25 顆球，數量多一點比較有堆疊感
+            const ballCount = 40; 
         
-            // 4. 動畫結束後移除 class 以便下次旋轉 (轉三圈需要一點時間)
-            setTimeout(() => {
-                knob.classList.remove('knob-spin');
-            }, 600);
+            for (let i = 0; i < ballCount; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+                // --- 隨機座標邏輯 ---
+                // 容器寬高 180px，減去球體寬度 28px，安全範圍約在 150px 內
+                // 我們稍微向圓心靠攏，避免球體被圓形邊框切掉太多
+                const randomX = Math.floor(Math.random() * 140) + 10; 
+                const randomY = Math.floor(Math.random() * 130) + 15; 
+        
+                ball.style.left = `${randomX}px`;
+                ball.style.top = `${randomY}px`;
+                
+                // 隨機旋轉與稍微不同的 Z-index 增加重疊感
+                ball.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+                ball.style.zIndex = Math.floor(Math.random() * 10);
+        
+                container.appendChild(ball);
+            }
         }
         
         // --- 新增：複製到剪貼簿的功能 ---
