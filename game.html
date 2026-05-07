@@ -197,7 +197,7 @@
             container.innerHTML = ''; 
             
             // 生成 20-25 顆球，數量多一點比較有堆疊感
-            const ballCount = 22; 
+            const ballCount = 40; 
         
             for (let i = 0; i < ballCount; i++) {
                 const ball = document.createElement('div');
@@ -208,7 +208,7 @@
                 // 容器寬高 180px，減去球體寬度 28px，安全範圍約在 150px 內
                 // 我們稍微向圓心靠攏，避免球體被圓形邊框切掉太多
                 const randomX = Math.floor(Math.random() * 140) + 10; 
-                const randomY = Math.floor(Math.random() * 140) + 15; 
+                const randomY = Math.floor(Math.random() * 130) + 15; 
         
                 ball.style.left = `${randomX}px`;
                 ball.style.top = `${randomY}px`;
