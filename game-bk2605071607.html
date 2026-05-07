@@ -156,7 +156,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbwo9BFxwSET7ZHIz0eNJuHeKDq7brLwrDnXZ4vZtpmrnhJJQ5KL5jQp1N8yHDZ6oM0/exec"; 
+        const gasUrl = "https://script.google.com/macros/s/AKfycbyfgbXg97FUZd-0ig9dgmSfSyjnweEzOIKJMSPlz0VsjOuR6RE7WAna4_jTRJV-K2o/exec"; 
         const currentUser = sessionStorage.getItem('username');
         let isSpinning = false;
 
@@ -317,17 +317,20 @@
             try {
                 const res = await fetch(`${gasUrl}?action=getLogs`);
                 const data = await res.json();
+                
+                if (!data.history || !Array.isArray(data.history)) return;
         
-                console.log(data.history);        
                 const text = data.history.length > 0
-                    ? data.history.map(h =>
-                        `恭喜 [${h.nickname || h.username}] 抽中 ${h.prize}`
-                      ).join("  🌟  ")
-                    : "快來抽獎吧！";        
+                    ? data.history.map(h => {
+                        // 如果 nickname 還是 undefined 或 "undefined"，就用 username
+                        let displayName = (h.nickname && h.nickname !== "undefined") ? h.nickname : h.username;
+                        return `恭喜 [${displayName}] 抽中 ${h.prize}`;
+                      }).join("  🌟  ")
+                    : "快來抽獎吧！";
+                    
                 document.getElementById('globalHistory').textContent = text;
-        
-            } catch (e) {        
-                console.error(e);        
+            } catch (e) {
+                console.error("跑馬燈載入失敗:", e);
             }
         }
 
