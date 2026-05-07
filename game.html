@@ -18,6 +18,43 @@
         h3 { border-left: 5px solid var(--primary); padding-left: 10px; margin-top: 0; }
         ul { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; }
         li { padding: 8px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .prize-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .prize-name {
+            font-weight: bold;
+            color: var(--dark);
+        }
+        .prize-code {
+            font-size: 13px;
+            color: #666;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .copy-btn {
+            padding: 5px 10px;
+            background: #2b2d42;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .copy-btn:active {
+            background: #ef233c;
+        }
         
         #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 20px; border: 4px solid var(--primary); z-index: 100; text-align: center; width: 280px; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index: 90; }
@@ -107,12 +144,53 @@
                 const res = await fetch(`${gasUrl}?action=getLogs`);
                 const data = await res.json();
                 const list = document.getElementById('myList');
-                // 前端過濾：只顯示自己的帳號對應的紀錄
+                
+                // 過濾出自己的紀錄
                 const myLogs = data.history.filter(h => h.username === username || h.nickname === nickname);
+                
                 if (myLogs.length > 0) {
-                    list.innerHTML = myLogs.map(h => `<li><b>${h.prize}</b></li>`).join("");
+                    list.innerHTML = myLogs.map(h => {
+                        // 如果沒有序號或是 NONE，就不顯示複製按鈕
+                        const hasCode = h.code && h.code !== "NONE";
+                        return `
+                            <li class="history-item">
+                                <div class="prize-info">
+                                    <span class="prize-name">${h.prize}</span>
+                                    <span class="prize-code">${hasCode ? h.code : '無序號'}</span>
+                                </div>
+                                ${hasCode ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>` : ''}
+                            </li>
+                        `;
+                    }).join("");
+                } else {
+                    list.innerHTML = "<li>尚未有紀錄</li>";
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("讀取紀錄失敗", e);
+            }
+        }
+        
+        // --- 新增：複製到剪貼簿的功能 ---
+        function copyToClipboard(text) {
+            if (!text || text === "NONE") return;
+            
+            // 使用現代瀏覽器的 API
+            navigator.clipboard.writeText(text).then(() => {
+                alert("序號已複製到剪貼簿！");
+            }).catch(err => {
+                // 備用方案：傳統 execCommand 模式
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert("序號已複製！");
+                } catch (err) {
+                    alert("複製失敗，請手動選取");
+                }
+                document.body.removeChild(textArea);
+            });
         }
 
         function closeModal() {
