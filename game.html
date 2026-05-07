@@ -46,7 +46,7 @@
             border: 8px solid var(--pokeball-belt);
             border-radius: 50%;
             position: absolute;
-            top: 0;
+            top: 15px;                 /* 稍微下移，使其嵌入機身更自然 */
             left: 30px;
             z-index: 3;
             box-shadow: inset -10px 10px 20px rgba(255,255,255,0.4);
@@ -69,12 +69,12 @@
         
         /* 中間：腰帶線與旋轉鈕 */
         .pokegacha-belt {
-            width: 240px;
+            width: 240px;               /* 從 260px 縮小到 240px，與機身寬度一致 */
             height: 16px;
             background-color: var(--pokeball-belt);
             position: absolute;
-            top: 232px; /* 位於玻璃圓頂與機身交界處 */
-            left: 0;
+            top: 210px;                 /* 從 192px 下移到 210px */
+            left: 10px;                 /* 配合機身 left: 10px 的位置 */
             z-index: 5;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
@@ -87,8 +87,8 @@
             border: 10px solid var(--pokeball-belt);
             border-radius: 50%;
             position: absolute;
-            top: -32px; /* 向上浮在腰帶中央 */
-            left: 100px;
+            top: -32px;                 /* 維持相對於腰帶的高度 */
+            left: 80px;                 /* 修正水平置中：(240機身寬 - 60鈕寬 - 20邊框)/2 = 80 */
             z-index: 6;
             display: flex;
             justify-content: center;
