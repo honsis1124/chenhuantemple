@@ -103,7 +103,7 @@
     <script>
 
         // ⭐ GAS Web App URL
-        const gasUrl = "https://script.google.com/macros/s/AKfycbyfgbXg97FUZd-0ig9dgmSfSyjnweEzOIKJMSPlz0VsjOuR6RE7WAna4_jTRJV-K2o/exec";
+        const gasUrl = "https://script.google.com/macros/s/AKfycbytYoaERnyIdUrdXnjNJ1lyBAglEhagwYJw-W54OQsScCK3xUd1Eux8g-KMXGmFg3Ye/exec";
 
         // ⭐ 防止重複登入
         let isLoggingIn = false;
@@ -168,14 +168,9 @@
 
                 if (data.success && data.token) {
 
-                    // ⭐ 儲存 Token
-                    sessionStorage.setItem('loginToken', data.token);
-
-                    // ⭐ 儲存帳號
-                    sessionStorage.setItem('username', user);
-                  
-                    // ⭐ 儲存暱稱
-                    sessionStorage.setItem('nickname', data.nickname); 
+                    sessionStorage.setItem('token', data.token);
+                    sessionStorage.setItem('username', data.username);
+                    sessionStorage.setItem('nickname', data.nickname); // 強制存入暱稱
 
                     msg.style.color = "green";
                     msg.innerText = "登入成功！跳轉中...";
