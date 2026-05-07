@@ -332,7 +332,7 @@
                 
                 // 重要：使用 Username 進行過濾，這是最準確的
                 const myUsername = sessionStorage.getItem('username');
-                const myLogs = data.history.filter(h => h.username === myUsername);
+                const myLogs = data.history.filter(h => h.username === currentUser);
                 
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
