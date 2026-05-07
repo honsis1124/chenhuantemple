@@ -10,63 +10,108 @@
         
         .marquee-box { width: 100%; max-width: 400px; background: var(--dark); color: var(--gold); padding: 10px; border-radius: 50px; margin-bottom: 20px; text-align: center; overflow: hidden; white-space: nowrap; }
 
-        /* 扭蛋機 */
-        .machine-container { width: 100%; display: flex; justify-content: center; position: relative; margin-bottom: 50px; }
-        .gacha-machine { width: 260px; height: 360px; position: relative; }
-
-        @keyframes shakeAnim {
-            0% { transform: rotate(0deg); }
-            25% { transform: rotate(2deg); }
-            50% { transform: rotate(-2deg); }
-            100% { transform: rotate(0deg); }
-        }
-        .shake { animation: shakeAnim 0.2s infinite; }
-
-        .machine-top { 
-            width: 180px; height: 180px; 
-            background: rgba(255, 255, 255, 0.6); 
-            border: 6px solid #444; border-radius: 50%; 
-            position: absolute; top: 0; left: 40px; 
-            /* 移除原本的 flex 設定 */
-            display: block; 
-            overflow: hidden; 
-            z-index: 2;
+        /* 扭蛋機容器 */
+        .gacha-container {
+            position: relative;
+            width: 240px;
+            height: 380px;
+            margin: 20px auto;
         }
         
-        /* 新增球的共同樣式 */
-        .ball {
-            width: 28px;
-            height: 28px;
+        /* 透明玻璃圓頂 */
+        .gacha-top {
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 6px solid #333;
             border-radius: 50%;
-            position: absolute; /* 改為絕對定位 */
-            border: 2px solid rgba(0,0,0,0.15);
-            box-shadow: inset -4px -4px 6px rgba(0,0,0,0.2); /* 內陰影讓球變圓潤 */
+            position: absolute;
+            top: 0;
+            left: 20px;
+            z-index: 2;
+            box-shadow: inset -10px 10px 20px rgba(255,255,255,0.5);
+            overflow: hidden;
         }
-
-        .machine-bottom { 
-            width: 200px; height: 160px; 
-            background: var(--primary); /* 修正變數名稱 */
-            border: 6px solid #444; border-radius: 20px; 
-            position: absolute; bottom: 10px; left: 30px; z-index: 1; 
+        
+        /* 玻璃反光 */
+        .gacha-top::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            width: 40px;
+            height: 80px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+            transform: rotate(20deg);
         }
-
-        .knob { 
-            width: 50px; height: 50px; background: #fff; border: 4px solid #444; border-radius: 50%; 
-            position: absolute; top: 30px; left: 75px; cursor: pointer; z-index: 3; 
+        
+        /* 扭蛋機紅色基座 */
+        .gacha-body {
+            width: 220px;
+            height: 200px;
+            background: #ef233c;
+            border: 6px solid #333;
+            border-radius: 20px 20px 40px 40px;
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            z-index: 1;
+            box-shadow: inset -15px 0 0 rgba(0,0,0,0.1);
         }
-        .knob::after { content: ""; width: 30px; height: 6px; background: #444; position: absolute; top: 22px; left: 10px; border-radius: 3px; }
-        .spin { transform: rotate(360deg) !important; transition: transform 0.5s; }
-
-        .exit { width: 60px; height: 35px; background: #333; border-radius: 10px 10px 0 0; position: absolute; bottom: 0; left: 70px; }
-        .out-ball { width: 45px; height: 45px; border-radius: 50%; border: 3px solid #333; position: absolute; bottom: 0; left: 77px; display: none; z-index: 5; }
-
-        @keyframes ballDrop {
-            0% { transform: translateY(0); opacity: 1; }
-            40% { transform: translateY(60px) scaleY(0.8); }
-            100% { transform: translateY(55px); opacity: 1; }
+        
+        /* 投幣轉盤 */
+        .gacha-knob {
+            width: 60px;
+            height: 60px;
+            background: #ccc;
+            border: 4px solid #333;
+            border-radius: 50%;
+            position: absolute;
+            top: 40px;
+            left: 80px;
+            cursor: pointer;
+            transition: transform 0.5s ease;
         }
-        .ball-animation { display: block !important; animation: ballDrop 0.6s ease-out forwards; }
-        /* ===================== */
+        
+        .gacha-knob::after {
+            content: "";
+            width: 40px;
+            height: 10px;
+            background: #333;
+            position: absolute;
+            top: 25px;
+            left: 10px;
+            border-radius: 5px;
+        }
+        
+        /* 旋轉動畫 */
+        .knob-spin {
+            transform: rotate(360deg);
+        }
+        
+        /* 取物口 */
+        .gacha-exit {
+            width: 70px;
+            height: 50px;
+            background: #333;
+            border-radius: 10px 10px 5px 5px;
+            position: absolute;
+            bottom: 20px;
+            left: 75px;
+        }
+        
+        /* 內部的扭蛋小球 (裝飾用) */
+        .ball {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: absolute;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+        .b1 { background: #ffbe0b; top: 120px; left: 50px; }
+        .b2 { background: #fb5607; top: 140px; left: 90px; }
+        .b3 { background: #3a86ff; top: 110px; left: 110px; }
 
         .history-section { width: 100%; max-width: 400px; background: white; margin-top: 30px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h3 { border-left: 5px solid var(--primary); padding-left: 10px; margin-top: 0; }
@@ -158,17 +203,16 @@
 
     <h2 id="welcomeMsg">您好</h2>
 
-    <div id="gameContainer" style="display:none; width: 100%; max-width: 400px;">
-        <div class="machine-container">
-            <div class="gacha-machine" id="machine">
-                <div class="machine-top" id="ballContainer">
-                </div>
-                <div class="machine-bottom">
-                    <div class="knob" id="knob" onclick="handleDraw()"></div>
-                    <div class="exit"></div>
-                    <div id="outBall" class="out-ball"></div>
-                </div>
-            </div>
+    <div class="gacha-container" onclick="handleDrawClick()">
+        <div class="gacha-top">
+            <div class="ball b1"></div>
+            <div class="ball b2"></div>
+            <div class="ball b3"></div>
+        </div>
+        
+        <div class="gacha-body">
+            <div class="gacha-knob" id="knob"></div>
+            <div class="gacha-exit"></div>
         </div>
     </div>
 
@@ -207,43 +251,24 @@
         const nickname = sessionStorage.getItem('nickname');
 
         // 1. 在驗證完 token 後顯示容器
-        if (!token) { 
-            window.location.href = 'index.html'; 
-        } else {
-            document.getElementById('gameContainer').style.display = 'block'; // 確保顯示機台
-        }
+        if (!token) { window.location.href = 'index.html'; }
         document.getElementById('welcomeMsg').innerText = `您好，${nickname || username}`;
 
         async function init() {
-            fillBalls(); // 新增這一行，球才會出現
             updateMarquee();
             updateMyHistory();
         }
 
-        async function handleDraw() {
+        async function handleDrawClick() {
             const knob = document.getElementById('knob');
-            knob.classList.add('spin'); // 加入旋轉動畫
             
-            try {
-                const res = await fetch(`${gasUrl}?action=draw&token=${encodeURIComponent(token)}`);
-                const data = await res.json();
-                
-                setTimeout(() => { // 稍微延遲讓動畫跑完
-                    knob.classList.remove('spin');
-                    if (data.success) {
-                        document.getElementById('pName').innerText = data.prizeName;
-                        document.getElementById('pCode').innerText = (data.prizeCode === "NONE") ? "再接再厲！" : "序號：" + data.prizeCode;
-                        document.getElementById('modal').style.display = 'block';
-                        document.getElementById('overlay').style.display = 'block';
-                        init();
-                    } else {
-                        alert(data.msg);
-                    }, 500);
-                } catch (e) {
-                    knob.classList.remove('spin');
-                    alert("連線失敗"); 
-                }
-            }
+            // 1. 旋轉鈕動畫
+            knob.classList.add('knob-spin');
+            setTimeout(() => knob.classList.remove('knob-spin'), 600);
+        
+            // 2. 呼叫原本的抽獎邏輯 (handleDraw)
+            await handleDraw(); 
+        }
 
         async function updateMarquee() {
             try {
