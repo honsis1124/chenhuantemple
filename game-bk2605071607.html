@@ -156,7 +156,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbwuDpNo3Skppggj8wsKD_oHoP6XLmTDsBhaTK2soCBlsp-B6GCS4zPi_wMXBPwkMqI/exec"; 
+        const gasUrl = "https://script.google.com/macros/s/AKfycbyXeSVErV3lGo3_BMmbhuePseci1at-FXVtDrB0vdSikdwUyN1ROOiwlJb4UaD0zds/exec"; 
         const currentUser = sessionStorage.getItem('username');
         let isSpinning = false;
 
@@ -315,51 +315,39 @@
 
         async function updateGlobalHistory() {
             try {
-                // 加上 cache buster 防止瀏覽器快取舊資料
-                const res = await fetch(`${gasUrl}?action=getLogs&t=${new Date().getTime()}`);
+                const res = await fetch(`${gasUrl}?action=getLogs&t=${Date.now()}`);
                 const data = await res.json();
+                // 顯示轉換後的 nickname
                 const text = data.history.length > 0 
-                    ? data.history.map(h => `恭喜 [${h.user}] 抽中 ${h.prize}`).join("  🌟  ")
+                    ? data.history.map(h => `恭喜 [${h.nickname}] 抽中 ${h.prize}`).join("  🌟  ")
                     : "快來抽獎吧！";
                 document.getElementById('globalHistory').innerText = text;
-            } catch (e) {
-                console.error("更新跑馬燈失敗", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         async function updateMyHistory() {
             try {
-                const res = await fetch(`${gasUrl}?action=getLogs&t=${new Date().getTime()}`);
+                const res = await fetch(`${gasUrl}?action=getLogs&t=${Date.now()}`);
                 const data = await res.json();
                 
-                // 這裡改用 session 裡的 nickname 比對
-                const currentNickname = sessionStorage.getItem('nickname');
-                
-                // 過濾出屬於自己的紀錄 (比對暱稱)
-                const myLogs = data.history.filter(h => h.user === currentNickname);
+                // 重要：使用 Username 進行過濾，這是最準確的
+                const myUsername = sessionStorage.getItem('username');
+                const myLogs = data.history.filter(h => h.username === myUsername);
                 
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
                     list.innerHTML = myLogs.map(h => `
                         <li>
                             <b>${h.prize}</b> 
-                            ${
-                                h.code !== "NONE" 
-                                ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>` 
-                                : ""
-                            }
+                            ${h.code !== "NONE" ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>` : ""}
                             <br>
-                            <small style="color:#666">
-                                ${h.code !== "NONE" ? h.code : "未中獎"}
-                            </small>
+                            <small style="color:#666">${h.code !== "NONE" ? h.code : "未中獎"}</small>
                         </li>
                     `).join("");
                 } else {
                     list.innerHTML = "<li>尚未有紀錄</li>";
                 }
-            } catch (e) {
-                console.error("更新個人紀錄失敗", e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         // 在 initData 或是 handleDraw 成功後呼叫
