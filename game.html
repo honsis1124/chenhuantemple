@@ -38,6 +38,21 @@
         <ul id="myList"><li>尚未有紀錄</li></ul>
     </div>
 
+    <div class="history-section" style="margin-top: 15px; text-align: center;">
+        <button onclick="openChangePassModal()" style="background: none; border: 1px solid #ccc; color: #666; cursor: pointer; padding: 5px 10px; border-radius: 5px;">修改密碼</button>
+    </div>
+    
+    <div class="overlay" id="passOverlay"></div>
+    <div id="passModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 25px; border-radius: 20px; border: 4px solid #333; z-index: 101; width: 280px; text-align: center;">
+        <h3>修改密碼</h3>
+        <input type="password" id="oldPass" placeholder="請輸入舊密碼" style="width: 90%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px;">
+        <input type="password" id="newPass" placeholder="請輸入新密碼" style="width: 90%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px;">
+        <div style="display: flex; justify-content: space-around; margin-top: 10px;">
+            <button onclick="closeChangePassModal()" style="padding: 8px 15px; background: #ccc; border: none; border-radius: 5px; cursor: pointer;">取消</button>
+            <button onclick="submitChangePass()" style="padding: 8px 15px; background: #2b2d42; color: white; border: none; border-radius: 5px; cursor: pointer;">確認修改</button>
+        </div>
+    </div>
+
     <div class="overlay" id="overlay"></div>
     <div id="modal">
         <h2 id="pTitle">中獎了！</h2>
@@ -47,7 +62,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbytYoaERnyIdUrdXnjNJ1lyBAglEhagwYJw-W54OQsScCK3xUd1Eux8g-KMXGmFg3Ye/exec";
+        const gasUrl = "https://script.google.com/macros/s/AKfycbzAF8ZePn-udHt1jC7Lu69VRaGzS2AeCu9eMAElM07Y1hUwD7Jb9hMjMeWVRvj7jsBU/exec";
         const token = sessionStorage.getItem('token');
         const username = sessionStorage.getItem('username');
         const nickname = sessionStorage.getItem('nickname');
@@ -103,6 +118,41 @@
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
+        }
+
+        function openChangePassModal() {
+            document.getElementById('passModal').style.display = 'block';
+            document.getElementById('passOverlay').style.display = 'block';
+        }
+        
+        function closeChangePassModal() {
+            document.getElementById('passModal').style.display = 'none';
+            document.getElementById('passOverlay').style.display = 'none';
+            document.getElementById('oldPass').value = '';
+            document.getElementById('newPass').value = '';
+        }
+        
+        async function submitChangePass() {
+            const oldP = document.getElementById('oldPass').value.trim();
+            const newP = document.getElementById('newPass').value.trim();
+            
+            if (!oldP || !newP) { alert("請填寫完整資訊"); return; }
+            if (newP.length < 4) { alert("新密碼長度建議至少 4 位"); return; }
+        
+            try {
+                const res = await fetch(`${gasUrl}?action=changePassword&token=${encodeURIComponent(token)}&oldPassword=${encodeURIComponent(oldP)}&newPassword=${encodeURIComponent(newP)}`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert("密碼修改成功，請重新登入");
+                    sessionStorage.clear();
+                    window.location.href = 'index.html';
+                } else {
+                    alert(data.msg);
+                }
+            } catch (e) {
+                alert("連線失敗，請稍後再試");
+            }
         }
 
         init();
