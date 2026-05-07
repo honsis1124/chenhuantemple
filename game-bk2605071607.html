@@ -328,7 +328,8 @@
             try {
                 const res = await fetch(`${gasUrl}?action=getLogs`);
                 const data = await res.json();
-                const myLogs = data.history.filter(h => h.user === currentUser);
+                const currentNickname = sessionStorage.getItem('nickname');
+                const myLogs = data.history.filter(h => h.user === currentNickname);
                 const list = document.getElementById('myHistory');
                 if (myLogs.length > 0) {
                     list.innerHTML = myLogs.map(h => `
