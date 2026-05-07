@@ -10,31 +10,30 @@
         
         .marquee-box { width: 100%; max-width: 400px; background: var(--dark); color: var(--gold); padding: 10px; border-radius: 50px; margin-bottom: 20px; text-align: center; overflow: hidden; white-space: nowrap; }
         
-        /* 扭蛋機整體容器 */
+        /* 扭蛋機容器 */
         .gacha-container {
             position: relative;
             width: 240px;
             height: 380px;
             margin: 20px auto;
-            cursor: pointer;
         }
         
-        /* 透明圓頂玻璃罩 */
+        /* 透明玻璃圓頂 */
         .gacha-top {
             width: 200px;
             height: 200px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
             border: 6px solid #333;
             border-radius: 50%;
             position: absolute;
             top: 0;
             left: 20px;
             z-index: 2;
-            box-shadow: inset -10px 10px 20px rgba(255,255,255,0.4);
-            overflow: hidden; /* 讓內部的球不會超出玻璃罩 */
+            box-shadow: inset -10px 10px 20px rgba(255,255,255,0.5);
+            overflow: hidden;
         }
         
-        /* 玻璃反光效果 */
+        /* 玻璃反光 */
         .gacha-top::before {
             content: "";
             position: absolute;
@@ -42,12 +41,12 @@
             left: 30px;
             width: 40px;
             height: 80px;
-            background: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.4);
             border-radius: 50%;
             transform: rotate(20deg);
         }
         
-        /* 紅色機身基座 */
+        /* 扭蛋機紅色基座 */
         .gacha-body {
             width: 220px;
             height: 200px;
@@ -61,7 +60,7 @@
             box-shadow: inset -15px 0 0 rgba(0,0,0,0.1);
         }
         
-        /* 銀色旋轉鈕 */
+        /* 投幣轉盤 */
         .gacha-knob {
             width: 60px;
             height: 60px;
@@ -71,7 +70,8 @@
             position: absolute;
             top: 40px;
             left: 80px;
-            transition: transform 0.6s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            cursor: pointer;
+            transition: transform 0.5s ease;
         }
         
         .gacha-knob::after {
@@ -85,9 +85,9 @@
             border-radius: 5px;
         }
         
-        /* 旋轉動畫類別 */
+        /* 旋轉動畫 */
         .knob-spin {
-            transform: rotate(720deg);
+            transform: rotate(360deg);
         }
         
         /* 取物口 */
@@ -101,13 +101,17 @@
             left: 75px;
         }
         
-        /* 裝飾小球 */
-        .ball { width: 45px; height: 45px; border-radius: 50%; position: absolute; border: 2px solid rgba(0,0,0,0.1); }
-        .b1 { background: #ffbe0b; top: 120px; left: 40px; }
+        /* 內部的扭蛋小球 (裝飾用) */
+        .ball {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: absolute;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+        .b1 { background: #ffbe0b; top: 120px; left: 50px; }
         .b2 { background: #fb5607; top: 140px; left: 90px; }
-        .b3 { background: #3a86ff; top: 100px; left: 120px; }
-        .b4 { background: #8338ec; top: 130px; left: 140px; }
-        .b5 { background: #ff006e; top: 80px; left: 70px; }
+        .b3 { background: #3a86ff; top: 110px; left: 110px; }
 
         .history-section { width: 100%; max-width: 400px; background: white; margin-top: 30px; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h3 { border-left: 5px solid var(--primary); padding-left: 10px; margin-top: 0; }
@@ -204,8 +208,6 @@
             <div class="ball b1"></div>
             <div class="ball b2"></div>
             <div class="ball b3"></div>
-            <div class="ball b4"></div>
-            <div class="ball b5"></div>
         </div>
         
         <div class="gacha-body">
@@ -326,19 +328,12 @@
         async function handleDrawClick() {
             const knob = document.getElementById('knob');
             
-            // 1. 防止重複點擊
-            if (knob.classList.contains('knob-spin')) return;
-        
-            // 2. 旋轉鈕動畫
+            // 1. 旋轉鈕動畫
             knob.classList.add('knob-spin');
-            
-            // 3. 呼叫你原本寫好的 handleDraw 抽獎邏輯
-            await handleDraw(); 
+            setTimeout(() => knob.classList.remove('knob-spin'), 600);
         
-            // 4. 動畫結束後移除 class 以便下次旋轉
-            setTimeout(() => {
-                knob.classList.remove('knob-spin');
-            }, 600);
+            // 2. 呼叫原本的抽獎邏輯 (handleDraw)
+            await handleDraw(); 
         }
         
         // --- 新增：複製到剪貼簿的功能 ---
