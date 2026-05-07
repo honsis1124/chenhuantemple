@@ -49,8 +49,23 @@
             background: rgba(255, 255, 255, 0.6); 
             border: 6px solid #444; border-radius: 50%; 
             position: absolute; top: 0; left: 40px; 
-            display: flex; flex-wrap: wrap; justify-content: center; align-content: center; 
-            overflow: hidden; z-index: 2; 
+            display: flex; 
+            flex-wrap: wrap;       /* 讓球多到塞不下時會自動換行 */
+            justify-content: center; 
+            align-content: center; 
+            overflow: hidden; 
+            z-index: 2; 
+            padding: 5px;          /* 增加一點內邊距讓球不貼邊 */
+        }
+        
+        /* 新增球的共同樣式 */
+        .ball {
+            width: 25px;           /* 稍微縮小一點點，20顆才塞得漂亮 */
+            height: 25px;
+            border-radius: 50%;
+            margin: 2px;
+            border: 2px solid rgba(0,0,0,0.1); /* 淡淡的邊框增加立體感 */
+            box-shadow: inset -3px -3px 6px rgba(0,0,0,0.2); /* 內陰影讓球變圓潤 */
         }
 
         .machine-bottom { 
@@ -104,10 +119,7 @@
     <div id="gameContainer" style="display:none; width: 100%; max-width: 400px;">
         <div class="machine-container">
             <div class="gacha-machine" id="machine">
-                <div class="machine-top">
-                    <div style="width:30px; height:30px; background:#ff4d6d; border-radius:50%; margin:2px;"></div>
-                    <div style="width:30px; height:30px; background:#48cae4; border-radius:50%; margin:2px;"></div>
-                    <div style="width:30px; height:30px; background:#ffbe0b; border-radius:50%; margin:2px;"></div>
+                <div class="machine-top" id="ballContainer">
                 </div>
                 <div class="machine-bottom">
                     <div class="knob" id="knob" onclick="handleDraw()"></div>
@@ -160,6 +172,7 @@
         }
 
         async function initData() {
+            fillBalls(); // 執行動態產生球
             updateGlobalHistory();
             updateMyHistory();
         }
@@ -178,6 +191,24 @@
                 document.body.removeChild(el);
                 alert("序號已複製成功！");
             });
+        }
+
+        function fillBalls() {
+            const container = document.getElementById('ballContainer');
+            // 定義你喜歡的扭蛋顏色清單
+            const colors = ["#ff4d6d", "#48cae4", "#ffbe0b", "#72efdd", "#9d4edd", "#fb8500", "#52b788"];
+            
+            container.innerHTML = ''; // 先清空容器
+            
+            for (let i = 0; i < 20; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                // 隨機從清單中挑選顏色
+                ball.style.background = colors[Math.floor(Math.random() * colors.length)];
+                // 隨機旋轉角度，讓內陰影方向略微不同，看起來更隨機
+                ball.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+                container.appendChild(ball);
+            }
         }
 
         // 控制修改密碼區塊顯示/隱藏
@@ -226,6 +257,8 @@
         async function handleDraw() {
             if (isSpinning) return;
             isSpinning = true;
+
+            fillBalls(); // 抽獎時重新隨機排列球的顏色或位置，模擬攪拌效果
 
             const knob = document.getElementById('knob');
             const machine = document.getElementById('machine');
