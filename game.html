@@ -221,20 +221,29 @@
         }
 
         async function handleDraw() {
+            const knob = document.getElementById('knob');
+            knob.classList.add('spin'); // 加入旋轉動畫
+            
             try {
                 const res = await fetch(`${gasUrl}?action=draw&token=${encodeURIComponent(token)}`);
                 const data = await res.json();
-                if (data.success) {
-                    document.getElementById('pName').innerText = data.prizeName;
-                    document.getElementById('pCode').innerText = (data.prizeCode === "NONE") ? "再接再厲！" : "序號：" + data.prizeCode;
-                    document.getElementById('modal').style.display = 'block';
-                    document.getElementById('overlay').style.display = 'block';
-                    init();
-                } else {
-                    alert(data.msg);
+                
+                setTimeout(() => { // 稍微延遲讓動畫跑完
+                    knob.classList.remove('spin');
+                    if (data.success) {
+                        document.getElementById('pName').innerText = data.prizeName;
+                        document.getElementById('pCode').innerText = (data.prizeCode === "NONE") ? "再接再厲！" : "序號：" + data.prizeCode;
+                        document.getElementById('modal').style.display = 'block';
+                        document.getElementById('overlay').style.display = 'block';
+                        init();
+                    } else {
+                        alert(data.msg);
+                    }, 500);
+                } catch (e) {
+                    knob.classList.remove('spin');
+                    alert("連線失敗"); 
                 }
-            } catch (e) { alert("連線失敗"); }
-        }
+            }
 
         async function updateMarquee() {
             try {
