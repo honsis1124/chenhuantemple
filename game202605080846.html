@@ -190,6 +190,54 @@
         .copy-btn:active {
             transform: translateY(0);
         }
+
+        /* 統計區塊樣式 */
+        .stats-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        .stats-name {
+            width: 80px;
+            font-weight: bold;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .stats-bars {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .bar-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .bar-label {
+            font-size: 11px;
+            width: 55px;
+            color: #666;
+        }
+        .bar-bg {
+            flex-grow: 1;
+            height: 12px;
+            background: #eee;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .bar-fill-win { background: var(--primary); height: 100%; transition: width 0.5s; }
+        .bar-fill-lose { background: var(--dark); height: 100%; transition: width 0.5s; }
+        .bar-percent {
+            font-size: 11px;
+            width: 35px;
+            text-align: right;
+            font-family: monospace;
+        }
         
         #modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 20px; border: 4px solid var(--primary); z-index: 100; text-align: center; width: 280px; }
         .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index: 90; }
@@ -225,6 +273,11 @@
         <ul id="myList"><li>尚未有紀錄</li></ul>
     </div>
 
+    <div class="history-section">
+        <h3>📊 全體中獎率統計</h3>
+        <div id="statsList">載入統計中...</div>
+    </div>
+
     <div class="history-section" style="margin-top: 15px; text-align: center;">
         <button onclick="openChangePassModal()" style="background: none; border: 1px solid #ccc; color: #666; cursor: pointer; padding: 5px 10px; border-radius: 5px;">修改密碼</button>
     </div>
@@ -249,7 +302,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbwrTO9Zjmo7dQmYs55qv-lgYHNRqhIm1raXwsREXe1huzGOmcY6rdS1tWYwkC50mbo9/exec";
+        const gasUrl = "https://script.google.com/macros/s/AKfycbyyziH8KTkOcG-B-VJJ27bTSKDQYZTSORrZmvESXw83MRoMeHCKyqlrdUFy9oAJsG_W/exec";
         const token = sessionStorage.getItem('token');
         const username = sessionStorage.getItem('username');
         const nickname = sessionStorage.getItem('nickname');
@@ -261,6 +314,7 @@
         async function init() {
             updateMarquee();
             updateMyHistory();
+            updateStats(); // 中獎統計表
         }
 
         async function handleDraw() {
@@ -352,6 +406,46 @@
                 }
             } catch (e) {
                 console.error("更新紀錄失敗", e);
+            }
+        }
+
+        //統計中獎數據
+        async function updateStats() {
+            try {
+                const res = await fetch(`${gasUrl}?action=getStats`);
+                const data = await res.json();
+                const container = document.getElementById('statsList');
+                
+                if (data.stats && data.stats.length > 0) {
+                    // 按中獎率排序 (可選)
+                    data.stats.sort((a, b) => b.winRate - a.winRate);
+
+                    container.innerHTML = data.stats.map(s => `
+                        <div class="stats-item">
+                            <div class="stats-name">${s.nickname}</div>
+                            <div class="stats-bars">
+                                <div class="bar-container">
+                                    <div class="bar-label">中獎率</div>
+                                    <div class="bar-bg">
+                                        <div class="bar-fill-win" style="width: ${s.winRate}%"></div>
+                                    </div>
+                                    <div class="bar-percent">${s.winRate}%</div>
+                                </div>
+                                <div class="bar-container">
+                                    <div class="bar-label">未中獎</div>
+                                    <div class="bar-bg">
+                                        <div class="bar-fill-lose" style="width: ${s.loseRate}%"></div>
+                                    </div>
+                                    <div class="bar-percent">${s.loseRate}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join("");
+                } else {
+                    container.innerHTML = "<p style='text-align:center; color:#999;'>尚無統計數據</p>";
+                }
+            } catch (e) {
+                console.error("統計更新失敗", e);
             }
         }
         
