@@ -202,6 +202,10 @@
     </div>
 
     <h2 id="welcomeMsg">您好</h2>
+    
+    <div style="background: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; border: 2px solid var(--primary); margin-bottom: 10px; color: var(--primary); font-weight: bold;">
+        🔥 目前剩餘總獎品數：<span id="prizeCount">--</span> 份
+    </div>
 
     <div class="gacha-container" onclick="handleDrawClick()">
         <div class="gacha-top">
@@ -245,7 +249,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbxbL7cfCdpD33qnKI1mxxNOAEIELQNzB-Ki82zEoufoGlbxHgLPOm4tcnS3aSQ8lpG0/exec";
+        const gasUrl = "https://script.google.com/macros/s/AKfycbwdlibrXITAB2N9BqXX8Gquj7bBFSPTOD5_i2gfQCcwWNq6m4OKMJmOZBxgmT-Lgncv/exec";
         const token = sessionStorage.getItem('token');
         const username = sessionStorage.getItem('username');
         const nickname = sessionStorage.getItem('nickname');
@@ -290,17 +294,31 @@
             try {
                 const res = await fetch(`${gasUrl}?action=getLogs`);
                 const data = await res.json();
+                // 更新剩餘獎品數量
+                if (data.remainingCount !== undefined) {
+                    document.getElementById('prizeCount').innerText = data.remainingCount;
+                }
+                
                 if (data.history) {
                     const text = data.history.map(h => `恭喜 [${h.nickname}] 獲得 ${h.prize}`).join(" 🌟 ");
                     document.getElementById('globalMarquee').innerText = text || "快來當第一個中獎者！";
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("更新資訊失敗", e);
+            }
         }
 
         async function updateMyHistory() {
             try {
                 const res = await fetch(`${gasUrl}?action=getLogs`);
                 const data = await res.json();
+                // --- 新增：同步更新剩餘獎品數量 (雙重保險) ---
+                if (data.remainingCount !== undefined) {
+                    const countEl = document.getElementById('prizeCount');
+                    if (countEl) countEl.innerText = data.remainingCount;
+                }
+                // ------------------------------------------
+                
                 const list = document.getElementById('myList');
                 
                 // 過濾自己的紀錄
