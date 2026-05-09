@@ -364,6 +364,45 @@
 
         async function updateMyHistory() {
             try {
+                // 修改處：在 URL 加入 targetUser 參數，讓後端只抓我的完整紀錄
+                const res = await fetch(`${gasUrl}?action=getLogs&targetUser=${encodeURIComponent(username)}`);
+                const data = await res.json();
+                const list = document.getElementById('myList');
+                
+                // 因為後端已經過濾好了，這裡直接使用 data.history
+                const myLogs = data.history;
+                
+                if (myLogs.length > 0) {
+                    list.innerHTML = myLogs.map(h => {
+                        const logDate = h.timestamp ? new Date(h.timestamp) : new Date();
+                        const timeStr = `${logDate.getMonth()+1}/${logDate.getDate()}<br>${logDate.getHours()}:${String(logDate.getMinutes()).padStart(2, '0')}`;
+                        const hasCode = h.code && String(h.code).trim() !== "" && h.code !== "NONE";
+                        const displayCode = hasCode ? h.code : "無序號";
+        
+                        return `
+                            <li class="history-item">
+                                <div class="item-time">${timeStr}</div>
+                                <div class="item-content">
+                                    <span class="prize-name">${h.prize || '未知名稱'}</span>
+                                    <span class="prize-code">${displayCode}</span>
+                                </div>
+                                <div class="item-action">
+                                    ${hasCode ? `<button class="copy-btn" onclick="copyToClipboard('${h.code}')">複製序號</button>` : ''}
+                                </div>
+                            </li>
+                        `;
+                    }).join("");
+                } else {
+                    list.innerHTML = "<li style='text-align:center; padding:20px; color:#999;'>目前尚無獲獎紀錄</li>";
+                }
+            } catch (e) {
+                console.error("更新個人紀錄失敗", e);
+            }
+        }
+        
+        /*
+        async function updateMyHistory() {
+            try {
                 const res = await fetch(`${gasUrl}?action=getLogs`);
                 const data = await res.json();
                 // --- 新增：同步更新剩餘獎品數量 (雙重保險) ---
@@ -408,7 +447,8 @@
                 console.error("更新紀錄失敗", e);
             }
         }
-
+        */
+        
         //統計中獎數據
         async function updateStats() {
             try {
