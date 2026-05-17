@@ -302,7 +302,7 @@
     </div>
 
     <script>
-        const gasUrl = "https://script.google.com/macros/s/AKfycbzmkqXRRvBHXV4jKNzn2lkzC7UreOwj2zgwnWDuTf8pfcdCtQhrBBxkbKUxN_vTBgWf/exec";
+        const gasUrl = "https://script.google.com/macros/s/AKfycbw-A177g0ZOr4NIqjpxAXCyUW2mYwPAefJjnHmRlbiKGzRJQ8ovkPs3aVUJB17qga03/exec";
         const token = sessionStorage.getItem('token');
         const username = sessionStorage.getItem('username');
         const nickname = sessionStorage.getItem('nickname');
@@ -333,15 +333,30 @@
             } catch (e) { alert("連線失敗"); }
         }
 
+        let isDrawing = false; // 設定鎖定變數
+
         async function handleDrawClick() {
+            if (isDrawing) return; // 如果正在抽獎中，直接攔截不執行
+            
+            isDrawing = true; // 鎖定
             const knob = document.getElementById('knob');
             
             // 1. 旋轉鈕動畫
             knob.classList.add('knob-spin');
-            setTimeout(() => knob.classList.remove('knob-spin'), 600);
+            
+            // 增加一個視覺回饋，讓使用者知道不能按（可選）
+            document.querySelector('.gacha-container').style.pointerEvents = 'none';
         
-            // 2. 呼叫原本的抽獎邏輯 (handleDraw)
-            await handleDraw(); 
+            try {
+                await handleDraw(); // 執行抽獎
+            } finally {
+                // 等待動畫結束後再解鎖 (例如 600ms)
+                setTimeout(() => {
+                    knob.classList.remove('knob-spin');
+                    isDrawing = false; // 解鎖
+                    document.querySelector('.gacha-container').style.pointerEvents = 'auto';
+                }, 600);
+            }
         }
 
         async function updateMarquee() {
